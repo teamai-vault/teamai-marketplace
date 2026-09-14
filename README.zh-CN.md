@@ -106,24 +106,24 @@ Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin so
 
 ```text
 copilot plugins marketplace add <path-to-teamai-marketplace>
-copilot plugins marketplace browse company-ai
-copilot plugins install common@company-ai
-copilot plugins install role-api@company-ai
+copilot plugins marketplace browse teamai
+copilot plugins install common@teamai
+copilot plugins install role-api@teamai
 ```
 
 Design Role：
 
 ```text
-copilot plugins install role-design@company-ai
+copilot plugins install role-design@teamai
 ```
 
 如果要清理测试 Marketplace 以及所有从它安装的 Plugin：
 
 ```text
-copilot plugins marketplace remove company-ai --force
+copilot plugins marketplace remove teamai --force
 ```
 
-`--force` 会同时移除该 Marketplace 及其来源 Plugin。如果你还准备继续使用某个 `company-ai` Plugin，不要执行这条命令。
+`--force` 会同时移除该 Marketplace 及其来源 Plugin。如果你还准备继续使用某个 `teamai` Plugin，不要执行这条命令。
 
 ## 新增 Capability
 

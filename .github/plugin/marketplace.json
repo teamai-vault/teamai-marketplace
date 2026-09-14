@@ -1,7 +1,7 @@
 {
-  "name": "company-ai",
+  "name": "teamai",
   "owner": {
-    "name": "Company AI"
+    "name": "Team AI"
   },
   "metadata": {
     "description": "Shared GitHub Copilot capabilities for engineering teams",

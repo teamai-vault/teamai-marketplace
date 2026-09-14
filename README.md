@@ -108,24 +108,24 @@ From any directory:
 
 ```text
 copilot plugins marketplace add <path-to-teamai-marketplace>
-copilot plugins marketplace browse company-ai
-copilot plugins install common@company-ai
-copilot plugins install role-api@company-ai
+copilot plugins marketplace browse teamai
+copilot plugins install common@teamai
+copilot plugins install role-api@teamai
 ```
 
 For the design role:
 
 ```text
-copilot plugins install role-design@company-ai
+copilot plugins install role-design@teamai
 ```
 
 Clean up a test marketplace and every plugin installed from it:
 
 ```text
-copilot plugins marketplace remove company-ai --force
+copilot plugins marketplace remove teamai --force
 ```
 
-`--force` removes the marketplace and plugins sourced from it. Do not use it when you intend to keep any `company-ai` plugin installed.
+`--force` removes the marketplace and plugins sourced from it. Do not use it when you intend to keep any `teamai` plugin installed.
 
 ## Adding a capability
 
