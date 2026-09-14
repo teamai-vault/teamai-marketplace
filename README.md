@@ -119,13 +119,13 @@ For the design role:
 copilot plugins install role-design@company-ai
 ```
 
-Clean up a local test when needed:
+Clean up a test marketplace and every plugin installed from it:
 
 ```text
-copilot plugins remove common@company-ai
-copilot plugins remove role-api@company-ai
-copilot plugins marketplace remove company-ai
+copilot plugins marketplace remove company-ai --force
 ```
+
+`--force` removes the marketplace and plugins sourced from it. Do not use it when you intend to keep any `company-ai` plugin installed.
 
 ## Adding a capability
 

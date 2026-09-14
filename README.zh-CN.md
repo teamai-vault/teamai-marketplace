@@ -117,13 +117,13 @@ Design Role：
 copilot plugins install role-design@company-ai
 ```
 
-测试后按需清理：
+如果要清理测试 Marketplace 以及所有从它安装的 Plugin：
 
 ```text
-copilot plugins remove common@company-ai
-copilot plugins remove role-api@company-ai
-copilot plugins marketplace remove company-ai
+copilot plugins marketplace remove company-ai --force
 ```
+
+`--force` 会同时移除该 Marketplace 及其来源 Plugin。如果你还准备继续使用某个 `company-ai` Plugin，不要执行这条命令。
 
 ## 新增 Capability
 
