@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.mjs",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test",
     "test:copilot": "node scripts/smoke-copilot.mjs"
   }
 }
