@@ -2,9 +2,27 @@
 
 中文 | [English](README.md)
 
-这是团队内部的 GitHub Copilot Plugin Marketplace，用于集中维护可复用的 Team AI capabilities。
+这是 Team AI 的 **Reference / Template GitHub Copilot Plugin Marketplace**，用于演示和承载可复用 capabilities。
 
-这个 Repo 是共享 Common、Role 以及未来 Product capabilities 的 **Git-native canonical source**。它直接使用 GitHub Copilot Marketplace 与 Agent Plugins 1.0 规范，不定义 Team AI 私有 Plugin 格式。
+这个 Repo 是“部门自有 Marketplace”的参考实现和模板。它直接使用 GitHub Copilot Marketplace 与 Agent Plugins 1.0 规范，不定义 Team AI 私有 Plugin 格式。
+
+`team-ai` CLI 不再绑定这个 Repo，也不绑定 `teamai` 这个 Marketplace ID。不同部门可以 clone / derive 本 Repo，使用自己的 Marketplace `name` 和共享能力，但所有部门继续安装、维护同一份公司级 CLI。
+
+## 作为部门 Marketplace 模板使用
+
+1. 将本 Repo clone / derive 到部门自己的 Git Repo。
+2. 修改 `.github/plugin/marketplace.json` 中的 `name`，使用部门最终确认的 Marketplace ID。
+3. 用经过 review 的部门能力替换示例 Common / Role 内容。
+4. 运行验证并发布 Repo。
+5. 使用这个 Repo 的 source 初始化统一 CLI：
+
+```powershell
+team-ai init `
+  --marketplace https://github.com/example-org/department-ai-marketplace.git `
+  --role api
+```
+
+Marketplace name 会由 Copilot 原生注册结果自动发现，使用者不需要重复输入 manifest name。
 
 ## Repo 架构
 
@@ -102,7 +120,7 @@ npm test
 
 Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin source、Skill 目录与 frontmatter 名称一致性，以及中央 Skill 重名。
 
-## 使用 Copilot CLI 本地测试
+## 使用 Copilot CLI 本地测试这份 Reference Marketplace
 
 ```text
 copilot plugins marketplace add <path-to-teamai-marketplace>

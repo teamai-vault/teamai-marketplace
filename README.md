@@ -2,9 +2,27 @@
 
 [中文](README.zh-CN.md) | English
 
-Internal GitHub Copilot Plugin Marketplace for reusable Team AI capabilities.
+Reference/template GitHub Copilot Plugin Marketplace for reusable Team AI capabilities.
 
-This repository is the **Git-native canonical source** for shared Common, Role, and future Product capabilities. It uses GitHub Copilot's native Marketplace and Agent Plugins 1.0 conventions; it does not define a Team AI-specific plugin format.
+This repository is the **reference implementation and template** for a department-owned Marketplace. It uses GitHub Copilot's native Marketplace and Agent Plugins 1.0 conventions; it does not define a Team AI-specific plugin format.
+
+The `team-ai` CLI is not bound to this repository or to the Marketplace ID `teamai`. Different departments can clone/derive this repository, choose their own Marketplace `name`, maintain their own capabilities, and use the same company-wide CLI.
+
+## Use as a department template
+
+1. Clone/derive this repository into the department-owned Git repository.
+2. Change `.github/plugin/marketplace.json` `name` to the department's final Marketplace ID.
+3. Replace the example Common/Role content with reviewed department capabilities.
+4. Validate and publish the repository.
+5. Initialize the generic CLI with that repository source:
+
+```powershell
+team-ai init `
+  --marketplace https://github.com/example-org/department-ai-marketplace.git `
+  --role api
+```
+
+The CLI discovers the Marketplace name from the native Copilot registration; users do not enter the manifest name separately.
 
 ## Repository architecture
 
@@ -102,7 +120,7 @@ npm test
 
 The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugin source paths, Skill directory/frontmatter alignment, and duplicate central Skill names.
 
-## Test locally with Copilot CLI
+## Test this reference Marketplace locally with Copilot CLI
 
 From any directory:
 
