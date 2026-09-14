@@ -1,0 +1,48 @@
+{
+  "name": "company-ai",
+  "owner": {
+    "name": "Company AI"
+  },
+  "metadata": {
+    "description": "Shared GitHub Copilot capabilities for engineering teams",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "common",
+      "description": "Shared Copilot capabilities useful across engineering roles",
+      "version": "0.1.0",
+      "source": "./plugins/common"
+    },
+    {
+      "name": "role-api",
+      "description": "Shared Copilot capabilities for API and backend engineers",
+      "version": "0.1.0",
+      "source": "./plugins/role-api"
+    },
+    {
+      "name": "role-ios",
+      "description": "Shared Copilot capabilities for iOS engineers",
+      "version": "0.1.0",
+      "source": "./plugins/role-ios"
+    },
+    {
+      "name": "role-aos",
+      "description": "Shared Copilot capabilities for Android engineers",
+      "version": "0.1.0",
+      "source": "./plugins/role-aos"
+    },
+    {
+      "name": "role-qa",
+      "description": "Shared Copilot capabilities for QA engineers",
+      "version": "0.1.0",
+      "source": "./plugins/role-qa"
+    },
+    {
+      "name": "role-design",
+      "description": "Shared Copilot capabilities for product and experience designers",
+      "version": "0.1.0",
+      "source": "./plugins/role-design"
+    }
+  ]
+}
