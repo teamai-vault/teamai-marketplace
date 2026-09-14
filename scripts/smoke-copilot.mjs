@@ -10,26 +10,8 @@ import { fileURLToPath } from "node:url";
 
 const exec = promisify(execFile);
 const marketplaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const profile = await mkdtemp(path.join(os.tmpdir(), "team-ai-copilot-smoke-"));
-const copilotHome = path.join(profile, ".copilot");
-const cacheHome = path.join(profile, ".cache");
-const appData = path.join(profile, "AppData", "Roaming");
-const localAppData = path.join(profile, "AppData", "Local");
-
-await Promise.all([copilotHome, cacheHome, appData, localAppData].map((directory) => mkdir(directory, { recursive: true })));
-
-const env = {
-  ...process.env,
-  HOME: profile,
-  USERPROFILE: profile,
-  COPILOT_HOME: copilotHome,
-  COPILOT_CACHE_HOME: cacheHome,
-  APPDATA: appData,
-  LOCALAPPDATA: localAppData,
-};
-delete env.COPILOT_GITHUB_TOKEN;
-delete env.GH_TOKEN;
-delete env.GITHUB_TOKEN;
+let profile;
+let env;
 
 async function run(args) {
   const command = process.platform === "win32" ? process.env.ComSpec ?? "cmd.exe" : "copilot";
@@ -42,6 +24,25 @@ async function run(args) {
 }
 
 try {
+  profile = await mkdtemp(path.join(os.tmpdir(), "team-ai-copilot-smoke-"));
+  const copilotHome = path.join(profile, ".copilot");
+  const cacheHome = path.join(profile, ".cache");
+  const appData = path.join(profile, "AppData", "Roaming");
+  const localAppData = path.join(profile, "AppData", "Local");
+  await Promise.all([copilotHome, cacheHome, appData, localAppData].map((directory) => mkdir(directory, { recursive: true })));
+  env = {
+    ...process.env,
+    HOME: profile,
+    USERPROFILE: profile,
+    COPILOT_HOME: copilotHome,
+    COPILOT_CACHE_HOME: cacheHome,
+    APPDATA: appData,
+    LOCALAPPDATA: localAppData,
+  };
+  delete env.COPILOT_GITHUB_TOKEN;
+  delete env.GH_TOKEN;
+  delete env.GITHUB_TOKEN;
+
   const version = (await run(["--version"])).stdout.trim().split(/\r?\n/, 1)[0];
   assert.match(version, /\b1\.0\.83\b/, `Expected Copilot CLI 1.0.83, received: ${version}`);
 
@@ -64,5 +65,5 @@ try {
 
   console.log(`Copilot CLI ${version} local Marketplace contract passed on ${process.platform}.`);
 } finally {
-  await rm(profile, { recursive: true, force: true });
+  if (profile) await rm(profile, { recursive: true, force: true });
 }

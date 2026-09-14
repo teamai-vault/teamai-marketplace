@@ -1,13 +1,18 @@
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
 const AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const NAME_PATTERN = /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$/;
 
+function isOutside(root, target) {
+  const relative = path.relative(root, target);
+  return relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
+}
+
 export async function validateMarketplace(root = process.cwd()) {
   const errors = [];
-  const marketplaceRoot = path.resolve(root);
+  const marketplaceRoot = await realpath(path.resolve(root));
   const marketplacePath = path.join(marketplaceRoot, ".github", "plugin", "marketplace.json");
   const marketplace = JSON.parse(await readFile(marketplacePath, "utf8"));
 
@@ -33,8 +38,7 @@ export async function validateMarketplace(root = process.cwd()) {
     pluginNames.add(entry.name);
 
     const pluginRoot = path.resolve(marketplaceRoot, entry.source ?? "");
-    const relativeSource = path.relative(marketplaceRoot, pluginRoot);
-    if (relativeSource === ".." || relativeSource.startsWith(`..${path.sep}`) || path.isAbsolute(relativeSource)) {
+    if (isOutside(marketplaceRoot, pluginRoot)) {
       errors.push(`${entry.name}: plugin source must stay inside the marketplace repository: ${entry.source}`);
       continue;
     }
@@ -47,8 +51,13 @@ export async function validateMarketplace(root = process.cwd()) {
       errors.push(`Plugin source does not exist: ${entry.source}`);
       continue;
     }
+    const resolvedPluginRoot = await realpath(pluginRoot);
+    if (isOutside(marketplaceRoot, resolvedPluginRoot)) {
+      errors.push(`${entry.name}: plugin source must stay inside the marketplace repository: ${entry.source}`);
+      continue;
+    }
 
-    const manifest = JSON.parse(await readFile(path.join(pluginRoot, "plugin.json"), "utf8"));
+    const manifest = JSON.parse(await readFile(path.join(resolvedPluginRoot, "plugin.json"), "utf8"));
     if (manifest.$schema !== AGENT_PLUGIN_SCHEMA) {
       errors.push(`${entry.name}: plugin.json must use Agent Plugins 1.0 schema`);
     }
@@ -62,7 +71,7 @@ export async function validateMarketplace(root = process.cwd()) {
       errors.push(`${entry.name}: invalid Agent Plugins 1.0 name`);
     }
 
-    const skillsRoot = path.join(pluginRoot, "skills");
+    const skillsRoot = path.join(resolvedPluginRoot, "skills");
     let skillDirs = [];
     try {
       skillDirs = (await readdir(skillsRoot, { withFileTypes: true })).filter((item) => item.isDirectory());
@@ -79,10 +88,14 @@ export async function validateMarketplace(root = process.cwd()) {
         errors.push(`${entry.name}: skill ${skillDir.name} is missing SKILL.md`);
         continue;
       }
-      const nameMatch = contents.match(/^---\s*[\r\n]+[\s\S]*?^name:\s*([^\r\n]+)[\r\n]+[\s\S]*?^---/m);
+      const frontmatter = contents.match(/^---\s*[\r\n]+([\s\S]*?)^---/m)?.[1] ?? "";
+      const nameMatch = frontmatter.match(/^name:\s*([^\r\n]+)/m);
       const skillName = nameMatch?.[1]?.trim();
       if (skillName !== skillDir.name) {
         errors.push(`${entry.name}: skill directory ${skillDir.name} does not match frontmatter name ${skillName ?? "<missing>"}`);
+      }
+      if (!frontmatter.match(/^description:\s*\S.*$/m)) {
+        errors.push(`${entry.name}: skill ${skillDir.name} is missing a frontmatter description`);
       }
       const previousOwner = skillOwners.get(skillDir.name);
       if (previousOwner) {
