@@ -7,7 +7,8 @@ const NAME_PATTERN = /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$/;
 
 export async function validateMarketplace(root = process.cwd()) {
   const errors = [];
-  const marketplacePath = path.join(root, ".github", "plugin", "marketplace.json");
+  const marketplaceRoot = path.resolve(root);
+  const marketplacePath = path.join(marketplaceRoot, ".github", "plugin", "marketplace.json");
   const marketplace = JSON.parse(await readFile(marketplacePath, "utf8"));
 
   if (!NAME_PATTERN.test(marketplace.name ?? "")) {
@@ -31,7 +32,12 @@ export async function validateMarketplace(root = process.cwd()) {
     }
     pluginNames.add(entry.name);
 
-    const pluginRoot = path.resolve(root, entry.source ?? "");
+    const pluginRoot = path.resolve(marketplaceRoot, entry.source ?? "");
+    const relativeSource = path.relative(marketplaceRoot, pluginRoot);
+    if (relativeSource === ".." || relativeSource.startsWith(`..${path.sep}`) || path.isAbsolute(relativeSource)) {
+      errors.push(`${entry.name}: plugin source must stay inside the marketplace repository: ${entry.source}`);
+      continue;
+    }
     try {
       if (!(await stat(pluginRoot)).isDirectory()) {
         errors.push(`Plugin source is not a directory: ${entry.source}`);

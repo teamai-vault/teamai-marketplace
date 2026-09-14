@@ -23,13 +23,16 @@ teamai-marketplace/
 │   ├── role-ios/
 │   ├── role-aos/
 │   ├── role-qa/
-│   └── role-design/
+│   ├── role-design/
+│   │   ├── plugin.json
+│   │   ├── skills/.gitkeep
+│   │   └── com.github.copilot/
+│   │       ├── agents/.gitkeep
+│   │       ├── rules/.gitkeep
+│   │       └── hooks/.gitkeep
+│   └── product-teamai/
 │       ├── plugin.json
-│       ├── skills/.gitkeep
-│       └── com.github.copilot/
-│           ├── agents/.gitkeep
-│           ├── rules/.gitkeep
-│           └── hooks/.gitkeep
+│       └── skills/teamai-change-readiness/SKILL.md
 ├── docs/
 ├── scripts/
 └── test/
@@ -43,7 +46,7 @@ teamai-marketplace/
 | --- | --- | --- |
 | Common | `common` | 多个 Role 都能使用的共享能力 |
 | Role | `role-api`、`role-design` | 某个职业/职能共享能力 |
-| Product | `product-payments` | 未来多个真实 Repo 共用的产品能力 |
+| Product | `product-teamai` | 同一产品多个真实 Repo 共用的能力 |
 | Project | 不放在这里 | 必须跟真实业务 Repo 的 `.github/*` 一起版本管理 |
 
 中央 Plugin 内的 Skill / Agent 等名称应尽量保持唯一。名称冲突视为 packaging/configuration error，而不是引入复杂 override engine 的理由。
@@ -90,6 +93,7 @@ com.github.copilot/
 - `role-aos`：Android Role package shell。
 - `role-qa`：QA Role package shell。
 - `role-design`：产品/体验设计 Role shell，保留明确的 `.gitkeep` placeholder。
+- `product-teamai`：供 CLI 与 Marketplace 两个 Repo 共用的跨仓变更验收能力。
 
 所有示例内容都会明确标注 Example，不会伪装成公司生产级规范。
 
@@ -98,6 +102,7 @@ com.github.copilot/
 ```text
 npm run validate
 npm test
+npm run test:copilot
 ```
 
 Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin source、Skill 目录与 frontmatter 名称一致性，以及中央 Skill 重名。
@@ -135,6 +140,7 @@ copilot plugins marketplace remove teamai --force
 6. Review 前运行 validator/test。
 
 更多规则见 [`docs/PLUGIN-GUIDE.md`](docs/PLUGIN-GUIDE.md) 与 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)。
+跨仓版本策略见 [`teamai-cli-customization/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-customization/blob/main/docs/VERSIONING.md)。
 
 ## 当前明确不做
 

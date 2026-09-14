@@ -55,6 +55,7 @@ try {
   const catalog = JSON.parse((await run(["plugins", "marketplace", "browse", "teamai", "--json"])).stdout);
   assert.ok(Array.isArray(catalog));
   assert.ok(catalog.some((item) => item.name === "common"));
+  assert.ok(catalog.some((item) => item.name === "product-teamai"));
 
   await run(["plugins", "install", "common@teamai"]);
   const installed = JSON.parse((await run(["plugins", "list", "--kind", "plugin", "--json"])).stdout);
