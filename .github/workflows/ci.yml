@@ -18,3 +18,16 @@ jobs:
           node-version: 20
       - run: npm run validate
       - run: npm test
+
+  copilot-contract:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --global @github/copilot@1.0.83
+      - run: npm run test:copilot
