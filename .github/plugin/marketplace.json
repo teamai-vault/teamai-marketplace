@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Shared GitHub Copilot capabilities for engineering teams",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
@@ -43,6 +43,12 @@
       "description": "Shared Copilot capabilities for product and experience designers",
       "version": "0.1.0",
       "source": "./plugins/role-design"
+    },
+    {
+      "name": "product-teamai",
+      "description": "Cross-repository change readiness for Team AI maintainers",
+      "version": "0.1.0",
+      "source": "./plugins/product-teamai"
     }
   ]
 }

@@ -2,9 +2,27 @@
 
 [中文](README.zh-CN.md) | English
 
-Internal GitHub Copilot Plugin Marketplace for reusable Team AI capabilities.
+Reference/template GitHub Copilot Plugin Marketplace for reusable Team AI capabilities.
 
-This repository is the **Git-native canonical source** for shared Common, Role, and future Product capabilities. It uses GitHub Copilot's native Marketplace and Agent Plugins 1.0 conventions; it does not define a Team AI-specific plugin format.
+This repository is the **reference implementation and template** for a department-owned Marketplace. It uses GitHub Copilot's native Marketplace and Agent Plugins 1.0 conventions; it does not define a Team AI-specific plugin format.
+
+The `team-ai` CLI is not bound to this repository or to the Marketplace ID `teamai`. Different departments can clone/derive this repository, choose their own Marketplace `name`, maintain their own capabilities, and use the same company-wide CLI.
+
+## Use as a department template
+
+1. Clone/derive this repository into the department-owned Git repository.
+2. Change `.github/plugin/marketplace.json` `name` to the department's final Marketplace ID.
+3. Replace the example Common/Role content with reviewed department capabilities.
+4. Validate and publish the repository.
+5. Initialize the generic CLI with that repository source:
+
+```powershell
+team-ai init `
+  --marketplace https://github.com/example-org/department-ai-marketplace.git `
+  --role api
+```
+
+The CLI discovers the Marketplace name from the native Copilot registration; users do not enter the manifest name separately.
 
 ## Repository architecture
 
@@ -23,13 +41,16 @@ teamai-marketplace/
 │   ├── role-ios/
 │   ├── role-aos/
 │   ├── role-qa/
-│   └── role-design/
+│   ├── role-design/
+│   │   ├── plugin.json
+│   │   ├── skills/.gitkeep
+│   │   └── com.github.copilot/
+│   │       ├── agents/.gitkeep
+│   │       ├── rules/.gitkeep
+│   │       └── hooks/.gitkeep
+│   └── product-teamai/
 │       ├── plugin.json
-│       ├── skills/.gitkeep
-│       └── com.github.copilot/
-│           ├── agents/.gitkeep
-│           ├── rules/.gitkeep
-│           └── hooks/.gitkeep
+│       └── skills/teamai-change-readiness/SKILL.md
 ├── docs/
 ├── scripts/
 └── test/
@@ -43,7 +64,7 @@ The Role Design plugin intentionally contains empty native capability directorie
 | --- | --- | --- |
 | Common | `common` | Useful across roles |
 | Role | `role-api`, `role-design` | Useful to one professional role |
-| Product | `product-payments` | Future shared capability across several repositories in one product |
+| Product | `product-teamai` | Shared capability across several repositories in one product |
 | Project | Not stored here | Must stay in the business repository under `.github/*` |
 
 Central plugin resource names should remain unique. Name collisions are packaging/configuration errors, not an invitation to create an override engine.
@@ -80,7 +101,14 @@ com.github.copilot/
   commands/
 ```
 
-MCP configuration should use the native Agent Plugin MCP mechanism when a real shared MCP use case is introduced. Team AI should not invent an MCP converter/injector.
+Optional shared MCP and Hook capabilities use the native Agent Plugin locations:
+
+```text
+mcp.json
+com.github.copilot/hooks/hooks.json
+```
+
+The Marketplace validator checks these declarations without starting servers or running Hooks. No current production plugin publishes an MCP server or Hook; add an implementation only when a reviewed use case and security owner exist. Team AI does not provide an MCP/Hook converter or injector.
 
 ## Current plugins
 
@@ -90,6 +118,7 @@ MCP configuration should use the native Agent Plugin MCP mechanism when a real s
 - `role-aos` — Android role package shell.
 - `role-qa` — QA role package shell.
 - `role-design` — product/experience design role shell with explicit `.gitkeep` placeholders.
+- `product-teamai` — cross-repository change-readiness guidance for the CLI and Marketplace repositories.
 
 Example content is intentionally marked as example material. It is not represented as production company policy.
 
@@ -98,11 +127,12 @@ Example content is intentionally marked as example material. It is not represent
 ```text
 npm run validate
 npm test
+npm run test:copilot
 ```
 
-The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugin source paths, Skill directory/frontmatter alignment, and duplicate central Skill names.
+The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugin source paths, Skill directory/frontmatter alignment, duplicate central Skill names, and optional native MCP/Hook declarations. Capability checks cover source containment and visibility, cross-platform Hook commands, remote execution patterns, HTTPS, and committed credential headers.
 
-## Test locally with Copilot CLI
+## Test this reference Marketplace locally with Copilot CLI
 
 From any directory:
 
@@ -137,6 +167,7 @@ copilot plugins marketplace remove teamai --force
 6. Run validation/tests before review.
 
 See [`docs/PLUGIN-GUIDE.md`](docs/PLUGIN-GUIDE.md) and [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
+The cross-repository version policy lives in [`teamai-cli-customization/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-customization/blob/main/docs/VERSIONING.md).
 
 ## Non-goals
 
