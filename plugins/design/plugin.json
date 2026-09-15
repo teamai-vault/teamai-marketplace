@@ -1,7 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "role-design",
+  "name": "design",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for product and experience designers",
-  "keywords": ["team-ai", "role", "design"]
+  "keywords": ["team-ai", "role", "design"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "role"
+    }
+  }
 }

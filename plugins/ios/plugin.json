@@ -1,7 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "role-ios",
+  "name": "ios",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for iOS engineers",
-  "keywords": ["team-ai", "ios"]
+  "keywords": ["team-ai", "ios"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "role"
+    }
+  }
 }

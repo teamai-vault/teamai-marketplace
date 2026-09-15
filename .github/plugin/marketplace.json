@@ -15,34 +15,34 @@
       "source": "./plugins/common"
     },
     {
-      "name": "role-api",
+      "name": "api",
       "description": "Shared Copilot capabilities for API and backend engineers",
       "version": "0.1.0",
-      "source": "./plugins/role-api"
+      "source": "./plugins/api"
     },
     {
-      "name": "role-ios",
+      "name": "ios",
       "description": "Shared Copilot capabilities for iOS engineers",
       "version": "0.1.0",
-      "source": "./plugins/role-ios"
+      "source": "./plugins/ios"
     },
     {
-      "name": "role-aos",
+      "name": "aos",
       "description": "Shared Copilot capabilities for Android engineers",
       "version": "0.1.0",
-      "source": "./plugins/role-aos"
+      "source": "./plugins/aos"
     },
     {
-      "name": "role-qa",
+      "name": "qa",
       "description": "Shared Copilot capabilities for QA engineers",
       "version": "0.1.0",
-      "source": "./plugins/role-qa"
+      "source": "./plugins/qa"
     },
     {
-      "name": "role-design",
+      "name": "design",
       "description": "Shared Copilot capabilities for product and experience designers",
       "version": "0.1.0",
-      "source": "./plugins/role-design"
+      "source": "./plugins/design"
     },
     {
       "name": "product-teamai",

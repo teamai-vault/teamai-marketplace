@@ -1,7 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "role-api",
+  "name": "api",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for API and backend engineers",
-  "keywords": ["team-ai", "backend", "api", "example"]
+  "keywords": ["team-ai", "backend", "api", "example"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "role"
+    }
+  }
 }
