@@ -34,11 +34,15 @@ teamai-marketplace/
 ├── plugins/
 │   ├── common/
 │   │   ├── plugin.json
-│   │   ├── skills/.gitkeep
+│   │   ├── skills/
+│   │   │   └── .gitkeep
 │   │   └── com.github.copilot/
-│   │       ├── agents/.gitkeep
-│   │       ├── rules/.gitkeep
-│   │       └── hooks/.gitkeep
+│   │       ├── agents/
+│   │       │   └── .gitkeep
+│   │       ├── rules/
+│   │       │   └── .gitkeep
+│   │       └── hooks/
+│   │           └── .gitkeep
 │   ├── api/
 │   ├── ios/
 │   ├── aos/
