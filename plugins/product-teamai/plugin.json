@@ -3,5 +3,10 @@
   "name": "product-teamai",
   "version": "0.1.0",
   "description": "Cross-repository change readiness for Team AI maintainers",
-  "keywords": ["team-ai", "product", "release-readiness"]
+  "keywords": ["team-ai", "product", "release-readiness"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "product"
+    }
+  }
 }

@@ -56,12 +56,14 @@ try {
   const catalog = JSON.parse((await run(["plugins", "marketplace", "browse", "teamai", "--json"])).stdout);
   assert.ok(Array.isArray(catalog));
   assert.ok(catalog.some((item) => item.name === "common"));
+  assert.ok(catalog.some((item) => item.name === "api"));
+  assert.ok(!catalog.some((item) => item.name === "role-api"));
   assert.ok(catalog.some((item) => item.name === "product-teamai"));
 
-  await run(["plugins", "install", "common@teamai"]);
+  await run(["plugins", "install", "api@teamai"]);
   const installed = JSON.parse((await run(["plugins", "list", "--kind", "plugin", "--json"])).stdout);
   assert.ok(Array.isArray(installed.plugins));
-  assert.ok(installed.plugins.some((item) => item.name === "common" && item.enabled === true));
+  assert.ok(installed.plugins.some((item) => item.name === "api" && item.enabled === true));
 
   const mcp = JSON.parse((await run(["plugins", "list", "--kind", "mcp", "--json"])).stdout);
   assert.ok(Array.isArray(mcp.plugins));

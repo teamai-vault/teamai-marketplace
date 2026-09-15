@@ -37,11 +37,11 @@ teamai-marketplace/
 │   │   ├── skills/
 │   │   └── com.github.copilot/
 │   │       └── agents/
-│   ├── role-api/
-│   ├── role-ios/
-│   ├── role-aos/
-│   ├── role-qa/
-│   ├── role-design/
+│   ├── api/
+│   ├── ios/
+│   ├── aos/
+│   ├── qa/
+│   ├── design/
 │   │   ├── plugin.json
 │   │   ├── skills/.gitkeep
 │   │   └── com.github.copilot/
@@ -56,14 +56,14 @@ teamai-marketplace/
 └── test/
 ```
 
-`role-design` 中故意保留了少量带 `.gitkeep` 的空原生 capability 目录，用于说明 Agent Plugin 可以承载的位置，但不会为了“填目录”伪造无意义的 Skill / Agent / Hook。
+`design` 中故意保留了少量带 `.gitkeep` 的空原生 capability 目录，用于说明 Agent Plugin 可以承载的位置，但不会为了“填目录”伪造无意义的 Skill / Agent / Hook。
 
 ## Capability 归属
 
 | 类型 | 示例 | 含义 |
 | --- | --- | --- |
 | Common | `common` | 多个 Role 都能使用的共享能力 |
-| Role | `role-api`、`role-design` | 某个职业/职能共享能力 |
+| Role | `api`、`design` | 某个职业/职能共享能力 |
 | Product | `product-teamai` | 同一产品多个真实 Repo 共用的能力 |
 | Project | 不放在这里 | 必须跟真实业务 Repo 的 `.github/*` 一起版本管理 |
 
@@ -84,6 +84,22 @@ teamai-marketplace/
 ## Agent Plugins 1.0
 
 每个 Plugin 自己拥有 root `plugin.json`，使用 Agent Plugins 1.0 schema。
+
+Team AI 管理的 Plugin 使用标准 `extensions` 对象声明类型：
+
+```json
+{
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "common"
+    }
+  }
+}
+```
+
+metadata 的 `kind` 只能是 `common`、`role` 或 `product`。Role Plugin 使用 `api`、`ios`、`design` 这类裸名称作为 identity，类型由 metadata 决定，不再通过 `role-` 名称前缀猜测。
+
+如果 Team AI extension namespace 必须变更，必须同时更新 Team AI CLI 的 `TEAM_AI_EXTENSION_NAMESPACE` 常量，以及 Marketplace 所有 `plugin.json` 文件中的 `extensions` namespace。
 
 Portable capability 放在标准目录，例如：
 
@@ -113,11 +129,11 @@ Marketplace Validator 只检查这些声明，不会启动 MCP Server 或执行 
 ## 当前 Plugins
 
 - `common`：跨 Role 公共能力，当前包含少量 example review 内容。
-- `role-api`：API/backend 角色，当前包含少量 Java/backend example。
-- `role-ios`：iOS Role package shell。
-- `role-aos`：Android Role package shell。
-- `role-qa`：QA Role package shell。
-- `role-design`：产品/体验设计 Role shell，保留明确的 `.gitkeep` placeholder。
+- `api`：API/backend 角色，当前包含少量 Java/backend example。
+- `ios`：iOS Role package shell。
+- `aos`：Android Role package shell。
+- `qa`：QA Role package shell。
+- `design`：产品/体验设计 Role shell，保留明确的 `.gitkeep` placeholder。
 - `product-teamai`：供 CLI 与 Marketplace 两个 Repo 共用的跨仓变更验收能力。
 
 所有示例内容都会明确标注 Example，不会伪装成公司生产级规范。
@@ -138,13 +154,13 @@ Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin so
 copilot plugins marketplace add <path-to-teamai-marketplace>
 copilot plugins marketplace browse teamai
 copilot plugins install common@teamai
-copilot plugins install role-api@teamai
+copilot plugins install api@teamai
 ```
 
 Design Role：
 
 ```text
-copilot plugins install role-design@teamai
+copilot plugins install design@teamai
 ```
 
 如果要清理测试 Marketplace 以及所有从它安装的 Plugin：
@@ -157,9 +173,9 @@ copilot plugins marketplace remove teamai --force
 
 ## 新增 Capability
 
-1. 先判断它属于 Common、Role、Product，还是只属于某个真实 Project。
+1. 先判断它属于 Common、Role、Product，还是只属于某个真实 Project，并在 Team AI extension metadata 中记录对应的 `kind`。
 2. 共享能力放到对应 Agent Plugin，并使用原生 Agent Plugin 目录。
-3. 中央资源名称保持唯一。
+3. 使用裸 Plugin 名称并保持中央资源名称唯一，不要用 `role-` 前缀编码类型。
 4. 不为了架构图创建无意义空 abstraction；只有确实需要表达“这里是受支持的原生扩展点”时才使用 `.gitkeep`。
 5. 发布新版本时同步更新 `plugin.json` 与 `.github/plugin/marketplace.json` 中的版本。
 6. Review 前运行 validator/test。

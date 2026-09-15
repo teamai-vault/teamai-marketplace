@@ -1,7 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "role-aos",
+  "name": "aos",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for Android engineers",
-  "keywords": ["team-ai", "android"]
+  "keywords": ["team-ai", "android"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "role"
+    }
+  }
 }

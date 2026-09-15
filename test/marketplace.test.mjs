@@ -22,6 +22,7 @@ async function createCapabilityFixture(context) {
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "test-plugin",
     version: "0.1.0",
+    extensions: { "com.company.teamai": { kind: "common" } },
   }), "utf8");
   return { marketplace, plugin };
 }
@@ -33,6 +34,55 @@ test("marketplace and Agent Plugins 1.0 manifests are structurally valid", async
 test("catalog publishes the Team AI product plugin", async () => {
   const marketplace = JSON.parse(await readFile(path.join(root, ".github", "plugin", "marketplace.json"), "utf8"));
   assert.ok(marketplace.plugins.some((plugin) => plugin.name === "product-teamai"));
+});
+
+test("catalog publishes bare role plugin names", async () => {
+  const marketplace = JSON.parse(await readFile(path.join(root, ".github", "plugin", "marketplace.json"), "utf8"));
+  const names = marketplace.plugins.map((plugin) => plugin.name);
+  assert.ok(names.includes("api"));
+  assert.ok(!names.includes("role-api"));
+});
+
+test("plugins publish the three Team AI metadata kinds", async () => {
+  const expectedKinds = new Map([
+    ["common", "common"],
+    ["api", "role"],
+    ["ios", "role"],
+    ["aos", "role"],
+    ["qa", "role"],
+    ["design", "role"],
+    ["product-teamai", "product"],
+  ]);
+  for (const [name, kind] of expectedKinds) {
+    const manifest = JSON.parse(await readFile(path.join(root, "plugins", name, "plugin.json"), "utf8"));
+    assert.equal(manifest.extensions?.["com.company.teamai"]?.kind, kind);
+  }
+});
+
+test("validator rejects missing Team AI metadata", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const manifestPath = path.join(plugin, "plugin.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  delete manifest.extensions;
+  await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    "test-plugin: plugin.json must define extensions.com.company.teamai metadata",
+  ]);
+});
+
+test("validator rejects unsupported Team AI metadata kinds and namespaces", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const manifestPath = path.join(plugin, "plugin.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  manifest.extensions["com.company.teamai"].kind = "department";
+  manifest.extensions["com.example.other"] = { kind: "role" };
+  await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    "test-plugin: extensions.com.company.teamai.kind must be one of common, role, product",
+    "test-plugin: plugin.json extensions must use only com.company.teamai namespace",
+  ]);
 });
 
 test("validator rejects plugin sources outside the marketplace repository", async (context) => {
@@ -50,6 +100,7 @@ test("validator rejects plugin sources outside the marketplace repository", asyn
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "outside-plugin",
     version: "0.1.0",
+    extensions: { "com.company.teamai": { kind: "common" } },
   }), "utf8");
 
   assert.deepEqual(await validateMarketplace(marketplace), [
@@ -74,6 +125,7 @@ test("validator rejects in-repository links to outside plugins", async (context)
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "linked-plugin",
     version: "0.1.0",
+    extensions: { "com.company.teamai": { kind: "common" } },
   }), "utf8");
 
   assert.deepEqual(await validateMarketplace(marketplace), [
@@ -95,6 +147,7 @@ test("validator rejects skills without a description", async (context) => {
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "test-plugin",
     version: "0.1.0",
+    extensions: { "com.company.teamai": { kind: "common" } },
   }), "utf8");
   await writeFile(path.join(plugin, "skills", "test-skill", "SKILL.md"), "---\nname: test-skill\n---\n", "utf8");
 
@@ -120,6 +173,7 @@ test("validator rejects plugin content links outside the plugin source", async (
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name,
     version: "0.1.0",
+    extensions: { "com.company.teamai": { kind: "common" } },
   });
 
   const manifestPlugin = path.join(marketplace, "plugins", "linked-manifest");

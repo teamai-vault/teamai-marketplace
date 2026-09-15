@@ -1,7 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "role-qa",
+  "name": "qa",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for QA engineers",
-  "keywords": ["team-ai", "qa"]
+  "keywords": ["team-ai", "qa"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "role"
+    }
+  }
 }
