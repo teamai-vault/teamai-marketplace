@@ -1,0 +1,7 @@
+interface:
+  display_name: "Delivery"
+  short_description: "Docs-first planning, executable gates, delegation, and independent review"
+  default_prompt: "Use /delivery to create a durable spec and plan, coordinate bounded implementation agents, maintain handoff state, and require an independent reviewer before acceptance."
+
+policy:
+  allow_implicit_invocation: false
