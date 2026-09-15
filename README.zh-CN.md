@@ -83,7 +83,14 @@ com.github.copilot/
   commands/
 ```
 
-以后如果出现真实共享 MCP 场景，也应使用 Agent Plugin 原生 MCP 机制，而不是让 Team AI 自己实现 MCP converter / injector。
+可选的共享 MCP 与 Hook 能力使用 Agent Plugin 原生位置：
+
+```text
+mcp.json
+com.github.copilot/hooks/hooks.json
+```
+
+Marketplace Validator 只检查这些声明，不会启动 MCP Server 或执行 Hook。当前生产 Plugin 没有发布真实 MCP 或 Hook；只有在明确用例和安全负责人完成评审后才加入实现。Team AI 不提供 MCP / Hook converter 或 injector。
 
 ## 当前 Plugins
 
@@ -105,7 +112,7 @@ npm test
 npm run test:copilot
 ```
 
-Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin source、Skill 目录与 frontmatter 名称一致性，以及中央 Skill 重名。
+Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin source、Skill 目录与 frontmatter 名称一致性、中央 Skill 重名，以及可选的原生 MCP / Hook 声明。能力检查包括 source containment/visibility、跨平台 Hook command、远端下载执行模式、HTTPS 与提交到仓库的凭据 header。
 
 ## 使用 Copilot CLI 本地测试
 

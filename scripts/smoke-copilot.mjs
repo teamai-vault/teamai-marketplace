@@ -63,6 +63,10 @@ try {
   assert.ok(Array.isArray(installed.plugins));
   assert.ok(installed.plugins.some((item) => item.name === "common" && item.enabled === true));
 
+  const mcp = JSON.parse((await run(["plugins", "list", "--kind", "mcp", "--json"])).stdout);
+  assert.ok(Array.isArray(mcp.plugins));
+  assert.ok(Array.isArray(mcp.errors));
+
   console.log(`Copilot CLI ${version} local Marketplace contract passed on ${process.platform}.`);
 } finally {
   if (profile) await rm(profile, { recursive: true, force: true });

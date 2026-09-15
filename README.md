@@ -83,7 +83,14 @@ com.github.copilot/
   commands/
 ```
 
-MCP configuration should use the native Agent Plugin MCP mechanism when a real shared MCP use case is introduced. Team AI should not invent an MCP converter/injector.
+Optional shared MCP and Hook capabilities use the native Agent Plugin locations:
+
+```text
+mcp.json
+com.github.copilot/hooks/hooks.json
+```
+
+The Marketplace validator checks these declarations without starting servers or running Hooks. No current production plugin publishes an MCP server or Hook; add an implementation only when a reviewed use case and security owner exist. Team AI does not provide an MCP/Hook converter or injector.
 
 ## Current plugins
 
@@ -105,7 +112,7 @@ npm test
 npm run test:copilot
 ```
 
-The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugin source paths, Skill directory/frontmatter alignment, and duplicate central Skill names.
+The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugin source paths, Skill directory/frontmatter alignment, duplicate central Skill names, and optional native MCP/Hook declarations. Capability checks cover source containment and visibility, cross-platform Hook commands, remote execution patterns, HTTPS, and committed credential headers.
 
 ## Test locally with Copilot CLI
 
