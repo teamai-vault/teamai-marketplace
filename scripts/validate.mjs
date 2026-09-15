@@ -50,7 +50,7 @@ export async function discoverMarketplaceUserInstructions(root = process.cwd()) 
         await visit(entryPath);
         continue;
       }
-      if (!entryInfo.isFile() || !entry.name.endsWith(".instructions.md")) continue;
+      if (!entryInfo.isFile() || entryInfo.nlink !== 1 || !entry.name.endsWith(".instructions.md")) continue;
 
       const relativePath = path.relative(sourceRoot, entryPath).replaceAll(path.sep, "/");
       if (relativePath && !isOutside(sourceRoot, entryPath)) discovered.push(relativePath);
@@ -248,6 +248,7 @@ export async function validateMarketplace(root = process.cwd()) {
   const marketplaceRoot = await realpath(path.resolve(root));
   const marketplacePath = path.join(marketplaceRoot, ".github", "plugin", "marketplace.json");
   const marketplace = JSON.parse(await readFile(marketplacePath, "utf8"));
+  await discoverMarketplaceUserInstructions(marketplaceRoot);
 
   if (!NAME_PATTERN.test(marketplace.name ?? "")) {
     errors.push(`Invalid marketplace name: ${marketplace.name ?? "<missing>"}`);

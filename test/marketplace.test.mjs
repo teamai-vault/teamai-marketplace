@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { link, lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -32,6 +32,8 @@ test("user-instruction discovery keeps sorted relative paths and ignores non-fil
   const sourceRoot = path.join(marketplace, "user-instructions");
   const outside = path.join(marketplace, "outside.instructions.md");
   const outsideDirectory = path.join(marketplace, "outside-instructions");
+  const hardLinkSource = path.join(marketplace, "hard-link-source.instructions.md");
+  const hardLinkEntry = path.join(sourceRoot, "hard-link.instructions.md");
   await mkdir(path.join(sourceRoot, "nested"), { recursive: true });
   await mkdir(outsideDirectory, { recursive: true });
   await writeFile(path.join(sourceRoot, "z.instructions.md"), "z\n", "utf8");
@@ -39,6 +41,8 @@ test("user-instruction discovery keeps sorted relative paths and ignores non-fil
   await writeFile(path.join(sourceRoot, "notes.md"), "ignored\n", "utf8");
   await writeFile(outside, "outside\n", "utf8");
   await writeFile(path.join(outsideDirectory, "escape.instructions.md"), "outside\n", "utf8");
+  await writeFile(hardLinkSource, "hard link\n", "utf8");
+  await link(hardLinkSource, hardLinkEntry);
   await symlink(outside, path.join(sourceRoot, "linked.instructions.md"), "file");
   await symlink(
     outsideDirectory,
@@ -48,6 +52,7 @@ test("user-instruction discovery keeps sorted relative paths and ignores non-fil
 
   const discovered = await discoverMarketplaceUserInstructions(marketplace);
 
+  assert.ok((await lstat(hardLinkEntry)).nlink > 1);
   assert.deepEqual(discovered, [
     "nested/a.instructions.md",
     "z.instructions.md",
@@ -63,6 +68,12 @@ test("missing user-instructions source is an empty discovery result", async (con
 
 test("marketplace and Agent Plugins 1.0 manifests are structurally valid", async () => {
   assert.deepEqual(await validateMarketplace(root), []);
+});
+
+test("catalog metadata version matches the private package version", async () => {
+  const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+  const marketplace = JSON.parse(await readFile(path.join(root, ".github", "plugin", "marketplace.json"), "utf8"));
+  assert.equal(marketplace.metadata?.version, packageJson.version);
 });
 
 test("reference Marketplace publishes native global and nested user instructions", async () => {
