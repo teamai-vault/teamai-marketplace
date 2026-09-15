@@ -84,3 +84,46 @@ test("validator rejects skills without a description", async (context) => {
     "test-plugin: skill test-skill is missing a frontmatter description",
   ]);
 });
+
+test("validator rejects plugin content links outside the plugin source", async (context) => {
+  const parent = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-content-boundary-"));
+  context.after(() => rm(parent, { recursive: true, force: true }));
+  const marketplace = path.join(parent, "marketplace");
+  const outside = path.join(parent, "outside");
+  const plugins = ["linked-manifest", "linked-skills", "linked-skill-file"];
+  await mkdir(path.join(marketplace, ".github", "plugin"), { recursive: true });
+  await mkdir(outside, { recursive: true });
+  await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
+    name: "test-marketplace",
+    plugins: plugins.map((name) => ({ name, version: "0.1.0", source: `./plugins/${name}` })),
+  }), "utf8");
+
+  const manifest = (name) => JSON.stringify({
+    $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+    name,
+    version: "0.1.0",
+  });
+
+  const manifestPlugin = path.join(marketplace, "plugins", "linked-manifest");
+  await mkdir(manifestPlugin, { recursive: true });
+  await writeFile(path.join(outside, "plugin.json"), manifest("linked-manifest"), "utf8");
+  await symlink(path.join(outside, "plugin.json"), path.join(manifestPlugin, "plugin.json"), "file");
+
+  const skillsPlugin = path.join(marketplace, "plugins", "linked-skills");
+  await mkdir(skillsPlugin, { recursive: true });
+  await writeFile(path.join(skillsPlugin, "plugin.json"), manifest("linked-skills"), "utf8");
+  await mkdir(path.join(outside, "skills"), { recursive: true });
+  await symlink(path.join(outside, "skills"), path.join(skillsPlugin, "skills"), process.platform === "win32" ? "junction" : "dir");
+
+  const skillFilePlugin = path.join(marketplace, "plugins", "linked-skill-file");
+  await mkdir(path.join(skillFilePlugin, "skills", "test-skill"), { recursive: true });
+  await writeFile(path.join(skillFilePlugin, "plugin.json"), manifest("linked-skill-file"), "utf8");
+  await writeFile(path.join(outside, "SKILL.md"), "---\nname: test-skill\ndescription: test\n---\n", "utf8");
+  await symlink(path.join(outside, "SKILL.md"), path.join(skillFilePlugin, "skills", "test-skill", "SKILL.md"), "file");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    "linked-manifest: plugin.json must stay inside the plugin source",
+    "linked-skills: skills directory must stay inside the plugin source",
+    "linked-skill-file: skill test-skill/SKILL.md must stay inside the plugin source",
+  ]);
+});

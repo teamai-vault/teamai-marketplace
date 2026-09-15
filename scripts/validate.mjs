@@ -57,7 +57,12 @@ export async function validateMarketplace(root = process.cwd()) {
       continue;
     }
 
-    const manifest = JSON.parse(await readFile(path.join(resolvedPluginRoot, "plugin.json"), "utf8"));
+    const manifestPath = await realpath(path.join(resolvedPluginRoot, "plugin.json"));
+    if (isOutside(resolvedPluginRoot, manifestPath)) {
+      errors.push(`${entry.name}: plugin.json must stay inside the plugin source`);
+      continue;
+    }
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     if (manifest.$schema !== AGENT_PLUGIN_SCHEMA) {
       errors.push(`${entry.name}: plugin.json must use Agent Plugins 1.0 schema`);
     }
@@ -71,9 +76,14 @@ export async function validateMarketplace(root = process.cwd()) {
       errors.push(`${entry.name}: invalid Agent Plugins 1.0 name`);
     }
 
-    const skillsRoot = path.join(resolvedPluginRoot, "skills");
+    let skillsRoot;
     let skillDirs = [];
     try {
+      skillsRoot = await realpath(path.join(resolvedPluginRoot, "skills"));
+      if (isOutside(resolvedPluginRoot, skillsRoot)) {
+        errors.push(`${entry.name}: skills directory must stay inside the plugin source`);
+        continue;
+      }
       skillDirs = (await readdir(skillsRoot, { withFileTypes: true })).filter((item) => item.isDirectory());
     } catch (error) {
       if (error?.code !== "ENOENT") throw error;
@@ -83,7 +93,12 @@ export async function validateMarketplace(root = process.cwd()) {
       const skillPath = path.join(skillsRoot, skillDir.name, "SKILL.md");
       let contents;
       try {
-        contents = await readFile(skillPath, "utf8");
+        const resolvedSkillPath = await realpath(skillPath);
+        if (isOutside(resolvedPluginRoot, resolvedSkillPath)) {
+          errors.push(`${entry.name}: skill ${skillDir.name}/SKILL.md must stay inside the plugin source`);
+          continue;
+        }
+        contents = await readFile(resolvedSkillPath, "utf8");
       } catch {
         errors.push(`${entry.name}: skill ${skillDir.name} is missing SKILL.md`);
         continue;
