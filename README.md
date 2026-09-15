@@ -34,20 +34,16 @@ teamai-marketplace/
 ├── plugins/
 │   ├── common/
 │   │   ├── plugin.json
-│   │   ├── skills/
-│   │   └── com.github.copilot/
-│   │       └── agents/
-│   ├── api/
-│   ├── ios/
-│   ├── aos/
-│   ├── qa/
-│   ├── design/
-│   │   ├── plugin.json
 │   │   ├── skills/.gitkeep
 │   │   └── com.github.copilot/
 │   │       ├── agents/.gitkeep
 │   │       ├── rules/.gitkeep
 │   │       └── hooks/.gitkeep
+│   ├── api/
+│   ├── ios/
+│   ├── aos/
+│   ├── qa/
+│   ├── design/
 │   └── product-teamai/
 │       ├── plugin.json
 │       └── skills/teamai-change-readiness/SKILL.md
@@ -56,7 +52,7 @@ teamai-marketplace/
 └── test/
 ```
 
-The `design` plugin intentionally contains empty native capability directories with `.gitkeep`. They document the expected Agent Plugin shape without inventing placeholder capabilities.
+The `common` plugin intentionally contains empty native capability directories with `.gitkeep`. They document the expected Agent Plugin shape without inventing placeholder capabilities.
 
 ## Capability ownership
 

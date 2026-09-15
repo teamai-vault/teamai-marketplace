@@ -34,20 +34,16 @@ teamai-marketplace/
 ├── plugins/
 │   ├── common/
 │   │   ├── plugin.json
-│   │   ├── skills/
-│   │   └── com.github.copilot/
-│   │       └── agents/
-│   ├── api/
-│   ├── ios/
-│   ├── aos/
-│   ├── qa/
-│   ├── design/
-│   │   ├── plugin.json
 │   │   ├── skills/.gitkeep
 │   │   └── com.github.copilot/
 │   │       ├── agents/.gitkeep
 │   │       ├── rules/.gitkeep
 │   │       └── hooks/.gitkeep
+│   ├── api/
+│   ├── ios/
+│   ├── aos/
+│   ├── qa/
+│   ├── design/
 │   └── product-teamai/
 │       ├── plugin.json
 │       └── skills/teamai-change-readiness/SKILL.md
@@ -56,7 +52,7 @@ teamai-marketplace/
 └── test/
 ```
 
-`design` 中故意保留了少量带 `.gitkeep` 的空原生 capability 目录，用于说明 Agent Plugin 可以承载的位置，但不会为了“填目录”伪造无意义的 Skill / Agent / Hook。
+`common` 中故意保留了少量带 `.gitkeep` 的空原生 capability 目录，用于说明 Agent Plugin 可以承载的位置，但不会为了“填目录”伪造无意义的 Skill / Agent / Hook。
 
 ## Capability 归属
 
