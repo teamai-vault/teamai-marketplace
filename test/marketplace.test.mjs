@@ -90,7 +90,7 @@ test("validator rejects plugin content links outside the plugin source", async (
   context.after(() => rm(parent, { recursive: true, force: true }));
   const marketplace = path.join(parent, "marketplace");
   const outside = path.join(parent, "outside");
-  const plugins = ["linked-manifest", "linked-skills", "linked-skill-file"];
+  const plugins = ["linked-manifest", "linked-skills", "linked-skill-dir", "linked-skill-file"];
   await mkdir(path.join(marketplace, ".github", "plugin"), { recursive: true });
   await mkdir(outside, { recursive: true });
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
@@ -115,6 +115,13 @@ test("validator rejects plugin content links outside the plugin source", async (
   await mkdir(path.join(outside, "skills"), { recursive: true });
   await symlink(path.join(outside, "skills"), path.join(skillsPlugin, "skills"), process.platform === "win32" ? "junction" : "dir");
 
+  const skillDirPlugin = path.join(marketplace, "plugins", "linked-skill-dir");
+  await mkdir(path.join(skillDirPlugin, "skills"), { recursive: true });
+  await writeFile(path.join(skillDirPlugin, "plugin.json"), manifest("linked-skill-dir"), "utf8");
+  await mkdir(path.join(outside, "skill-dir"), { recursive: true });
+  await writeFile(path.join(outside, "skill-dir", "SKILL.md"), "---\nname: test-skill\ndescription: test\n---\n", "utf8");
+  await symlink(path.join(outside, "skill-dir"), path.join(skillDirPlugin, "skills", "test-skill"), process.platform === "win32" ? "junction" : "dir");
+
   const skillFilePlugin = path.join(marketplace, "plugins", "linked-skill-file");
   await mkdir(path.join(skillFilePlugin, "skills", "test-skill"), { recursive: true });
   await writeFile(path.join(skillFilePlugin, "plugin.json"), manifest("linked-skill-file"), "utf8");
@@ -124,6 +131,7 @@ test("validator rejects plugin content links outside the plugin source", async (
   assert.deepEqual(await validateMarketplace(marketplace), [
     "linked-manifest: plugin.json must stay inside the plugin source",
     "linked-skills: skills directory must stay inside the plugin source",
+    "linked-skill-dir: skill directory test-skill must stay inside the plugin source",
     "linked-skill-file: skill test-skill/SKILL.md must stay inside the plugin source",
   ]);
 });

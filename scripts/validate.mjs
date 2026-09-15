@@ -84,13 +84,20 @@ export async function validateMarketplace(root = process.cwd()) {
         errors.push(`${entry.name}: skills directory must stay inside the plugin source`);
         continue;
       }
-      skillDirs = (await readdir(skillsRoot, { withFileTypes: true })).filter((item) => item.isDirectory());
+      skillDirs = (await readdir(skillsRoot, { withFileTypes: true }))
+        .filter((item) => item.isDirectory() || item.isSymbolicLink());
     } catch (error) {
       if (error?.code !== "ENOENT") throw error;
     }
 
     for (const skillDir of skillDirs) {
-      const skillPath = path.join(skillsRoot, skillDir.name, "SKILL.md");
+      const resolvedSkillRoot = await realpath(path.join(skillsRoot, skillDir.name));
+      if (isOutside(resolvedPluginRoot, resolvedSkillRoot)) {
+        errors.push(`${entry.name}: skill directory ${skillDir.name} must stay inside the plugin source`);
+        continue;
+      }
+      if (!(await stat(resolvedSkillRoot)).isDirectory()) continue;
+      const skillPath = path.join(resolvedSkillRoot, "SKILL.md");
       let contents;
       try {
         const resolvedSkillPath = await realpath(skillPath);
