@@ -37,11 +37,11 @@ teamai-marketplace/
 │   │   ├── skills/
 │   │   └── com.github.copilot/
 │   │       └── agents/
-│   ├── role-api/
-│   ├── role-ios/
-│   ├── role-aos/
-│   ├── role-qa/
-│   ├── role-design/
+│   ├── api/
+│   ├── ios/
+│   ├── aos/
+│   ├── qa/
+│   ├── design/
 │   │   ├── plugin.json
 │   │   ├── skills/.gitkeep
 │   │   └── com.github.copilot/
@@ -56,14 +56,14 @@ teamai-marketplace/
 └── test/
 ```
 
-The Role Design plugin intentionally contains empty native capability directories with `.gitkeep`. They document the expected Agent Plugin shape without inventing placeholder capabilities.
+The `design` plugin intentionally contains empty native capability directories with `.gitkeep`. They document the expected Agent Plugin shape without inventing placeholder capabilities.
 
 ## Capability ownership
 
 | Type | Example | Meaning |
 | --- | --- | --- |
 | Common | `common` | Useful across roles |
-| Role | `role-api`, `role-design` | Useful to one professional role |
+| Role | `api`, `design` | Useful to one professional role |
 | Product | `product-teamai` | Shared capability across several repositories in one product |
 | Project | Not stored here | Must stay in the business repository under `.github/*` |
 
@@ -84,6 +84,22 @@ Compatibility was also tested locally with GitHub Copilot CLI `1.0.83`: the CLI 
 ## Agent Plugins 1.0
 
 Each plugin has its own root `plugin.json` using the Agent Plugins 1.0 schema.
+
+Team AI-managed plugins declare their type in the standard `extensions` object:
+
+```json
+{
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "common"
+    }
+  }
+}
+```
+
+The metadata `kind` is one of `common`, `role`, or `product`. Role plugin names are bare identities such as `api`, `ios`, and `design`; the kind comes from metadata rather than a `role-` name prefix.
+
+If the Team AI extension namespace must change, update both the Team AI CLI `TEAM_AI_EXTENSION_NAMESPACE` constant and the `extensions` namespace in every Marketplace `plugin.json` file.
 
 Portable content belongs under standard locations such as:
 
@@ -113,11 +129,11 @@ The Marketplace validator checks these declarations without starting servers or 
 ## Current plugins
 
 - `common` — common capabilities. Includes small example review content.
-- `role-api` — API/backend capabilities. Includes small Java/backend examples.
-- `role-ios` — iOS role package shell.
-- `role-aos` — Android role package shell.
-- `role-qa` — QA role package shell.
-- `role-design` — product/experience design role shell with explicit `.gitkeep` placeholders.
+- `api` — API/backend capabilities. Includes small Java/backend examples.
+- `ios` — iOS role package shell.
+- `aos` — Android role package shell.
+- `qa` — QA role package shell.
+- `design` — product/experience design role shell with explicit `.gitkeep` placeholders.
 - `product-teamai` — cross-repository change-readiness guidance for the CLI and Marketplace repositories.
 
 Example content is intentionally marked as example material. It is not represented as production company policy.
@@ -140,13 +156,13 @@ From any directory:
 copilot plugins marketplace add <path-to-teamai-marketplace>
 copilot plugins marketplace browse teamai
 copilot plugins install common@teamai
-copilot plugins install role-api@teamai
+copilot plugins install api@teamai
 ```
 
 For the design role:
 
 ```text
-copilot plugins install role-design@teamai
+copilot plugins install design@teamai
 ```
 
 Clean up a test marketplace and every plugin installed from it:
@@ -159,9 +175,9 @@ copilot plugins marketplace remove teamai --force
 
 ## Adding a capability
 
-1. Decide whether the capability is Common, Role, Product, or Project-only.
+1. Decide whether the capability is Common, Role, Product, or Project-only; record Common/Role/Product as the `kind` in the Team AI extension metadata.
 2. For shared capabilities, place it in the appropriate Agent Plugin using native Agent Plugin paths.
-3. Keep central names unique.
+3. Use a bare plugin name and keep central names unique; do not encode the type in a `role-` prefix.
 4. Do not create empty abstractions merely to mirror an architecture diagram; `.gitkeep` placeholders are acceptable only when they communicate an intentionally supported native location.
 5. Update both `plugin.json` and `.github/plugin/marketplace.json` versions when publishing a new plugin version.
 6. Run validation/tests before review.
