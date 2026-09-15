@@ -1,4 +1,4 @@
-import { readFile, readdir, realpath, stat } from "node:fs/promises";
+import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
@@ -20,6 +20,45 @@ const SENSITIVE_HEADER = /^(?:authorization|proxy-authorization|cookie|set-cooki
 function isOutside(root, target) {
   const relative = path.relative(root, target);
   return relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
+}
+
+export async function discoverMarketplaceUserInstructions(root = process.cwd()) {
+  const sourceRoot = path.join(path.resolve(root), "user-instructions");
+  const discovered = [];
+
+  async function visit(directory) {
+    let directoryInfo;
+    try {
+      directoryInfo = await lstat(directory);
+    } catch (error) {
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
+    if (!directoryInfo.isDirectory() || directoryInfo.isSymbolicLink()) return;
+
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      let entryInfo;
+      try {
+        entryInfo = await lstat(entryPath);
+      } catch (error) {
+        if (error?.code === "ENOENT") continue;
+        throw error;
+      }
+      if (entryInfo.isSymbolicLink()) continue;
+      if (entryInfo.isDirectory()) {
+        await visit(entryPath);
+        continue;
+      }
+      if (!entryInfo.isFile() || !entry.name.endsWith(".instructions.md")) continue;
+
+      const relativePath = path.relative(sourceRoot, entryPath).replaceAll(path.sep, "/");
+      if (relativePath && !isOutside(sourceRoot, entryPath)) discovered.push(relativePath);
+    }
+  }
+
+  await visit(sourceRoot);
+  return discovered.sort();
 }
 
 function isObject(value) {

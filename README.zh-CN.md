@@ -51,12 +51,24 @@ teamai-marketplace/
 │   └── product-teamai/
 │       ├── plugin.json
 │       └── skills/teamai-change-readiness/SKILL.md
+├── user-instructions/
+│   ├── global.instructions.md
+│   └── git/
+│       └── commit.instructions.md
 ├── docs/
 ├── scripts/
 └── test/
 ```
 
 `common` 中故意保留了少量带 `.gitkeep` 的空原生 capability 目录，用于说明 Agent Plugin 可以承载的位置，但不会为了“填目录”伪造无意义的 Skill / Agent / Hook。
+
+## Marketplace 管理的用户级指令
+
+可选的 `user-instructions/` 目录用于承载 GitHub Copilot 原生用户级指令。目录下所有名称以 `.instructions.md` 结尾的 regular file 都会递归发现；其他文件会被忽略，link-like entry 不会被跟随。相对路径和文件内容都会原样保留。
+
+`team-ai init` 与 `team-ai sync` 会把这些文件镜像到受管理的目标目录 `~/.copilot/instructions/team-ai/`。Team AI 只拥有 `team-ai/` 子树，不会修改 `~/.copilot/instructions/` 下的个人指令或 `~/.copilot/copilot-instructions.md`。
+
+请原样使用 Copilot 原生 frontmatter，例如 `applyTo`。文件名和目录名仅用于组织内容，不赋予 company、department、role、product 或 action 语义，也不需要新增 Marketplace manifest 字段。
 
 ## Capability 归属
 
