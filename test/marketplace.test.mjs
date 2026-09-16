@@ -64,6 +64,32 @@ test("missing user-instructions source is an empty discovery result", async (con
   const { marketplace } = await createCapabilityFixture(context);
 
   assert.deepEqual(await discoverMarketplaceUserInstructions(marketplace), []);
+  assert.deepEqual(await validateMarketplace(marketplace), []);
+});
+
+test("validator rejects a regular file as the user-instructions source root", async (context) => {
+  const { marketplace } = await createCapabilityFixture(context);
+  const sourceRoot = path.join(marketplace, "user-instructions");
+  await writeFile(sourceRoot, "not a directory\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    `Marketplace user-instructions source must be a directory: ${sourceRoot}`,
+  ]);
+});
+
+test("validator rejects a link-like user-instructions source root", async (context) => {
+  const { marketplace } = await createCapabilityFixture(context);
+  const sourceRoot = path.join(marketplace, "user-instructions");
+  const outside = path.join(marketplace, "outside-user-instructions");
+  await mkdir(outside, { recursive: true });
+  await writeFile(path.join(outside, "escape.instructions.md"), "outside\n", "utf8");
+  await symlink(outside, sourceRoot, process.platform === "win32" ? "junction" : "dir");
+
+  const errors = await validateMarketplace(marketplace);
+
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Marketplace user-instructions source must not be a link-like entry/);
+  assert.match(errors[0], /user-instructions/);
 });
 
 test("marketplace and Agent Plugins 1.0 manifests are structurally valid", async () => {
