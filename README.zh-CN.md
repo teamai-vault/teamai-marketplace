@@ -51,7 +51,7 @@ teamai-marketplace/
 │   └── product-teamai/
 │       ├── plugin.json
 │       └── skills/teamai-change-readiness/SKILL.md
-├── user-instructions/
+├── instructions/
 │   ├── global.instructions.md
 │   └── git/
 │       └── commit.instructions.md
@@ -64,7 +64,7 @@ teamai-marketplace/
 
 ## Marketplace 管理的用户级指令
 
-可选的 `user-instructions/` 目录用于承载 GitHub Copilot 原生用户级指令。目录下所有名称以 `.instructions.md` 结尾的 regular file 都会递归发现；其他文件会被忽略，link-like entry 不会被跟随。相对路径和文件内容都会原样保留。
+可选的 `instructions/` 目录用于承载 GitHub Copilot 原生用户级指令。目录下所有名称以 `.instructions.md` 结尾的 regular file 都会递归发现；其他文件会被忽略，link-like entry 不会被跟随。相对路径和文件内容都会原样保留。
 
 `team-ai init` 与 `team-ai sync` 会把这些文件镜像到受管理的目标目录 `~/.copilot/instructions/team-ai/`。Team AI 只拥有 `team-ai/` 子树，不会修改 `~/.copilot/instructions/` 下的个人指令或 `~/.copilot/copilot-instructions.md`。
 

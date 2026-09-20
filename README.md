@@ -51,7 +51,7 @@ teamai-marketplace/
 │   └── product-teamai/
 │       ├── plugin.json
 │       └── skills/teamai-change-readiness/SKILL.md
-├── user-instructions/
+├── instructions/
 │   ├── global.instructions.md
 │   └── git/
 │       └── commit.instructions.md
@@ -64,7 +64,7 @@ The `common` plugin intentionally contains empty native capability directories w
 
 ## Marketplace-managed user instructions
 
-The optional `user-instructions/` directory carries native GitHub Copilot user instructions. Every regular file below it whose name ends in `.instructions.md` is discovered recursively; other files are ignored and link-like entries are never followed. Relative paths and file contents are preserved.
+The optional `instructions/` directory carries native GitHub Copilot user instructions. Every regular file below it whose name ends in `.instructions.md` is discovered recursively; other files are ignored and link-like entries are never followed. Relative paths and file contents are preserved.
 
 `team-ai init` and `team-ai sync` mirror these files into the managed target `~/.copilot/instructions/team-ai/`. Team AI owns only that `team-ai/` subtree and must not modify personal instruction files elsewhere under `~/.copilot/instructions/` or `~/.copilot/copilot-instructions.md`.
 

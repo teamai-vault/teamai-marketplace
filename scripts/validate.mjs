@@ -23,7 +23,7 @@ function isOutside(root, target) {
 }
 
 export async function discoverMarketplaceUserInstructions(root = process.cwd()) {
-  const sourceRoot = path.join(path.resolve(root), "user-instructions");
+  const sourceRoot = path.join(path.resolve(root), "instructions");
   const discovered = [];
 
   async function visit(directory, isSourceRoot = false) {
@@ -37,7 +37,7 @@ export async function discoverMarketplaceUserInstructions(root = process.cwd()) 
     if (!directoryInfo.isDirectory() || directoryInfo.isSymbolicLink()) {
       if (isSourceRoot) {
         const reason = directoryInfo.isSymbolicLink() ? "must not be a link-like entry" : "must be a directory";
-        throw new Error(`Marketplace user-instructions source ${reason}: ${directory}`);
+        throw new Error(`Marketplace user instructions source ${reason}: ${directory}`);
       }
       return;
     }
@@ -257,7 +257,7 @@ export async function validateMarketplace(root = process.cwd()) {
   try {
     await discoverMarketplaceUserInstructions(marketplaceRoot);
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : `Marketplace user-instructions source could not be read: ${path.join(marketplaceRoot, "user-instructions")}`);
+    errors.push(error instanceof Error ? error.message : `Marketplace user instructions source could not be read: ${path.join(marketplaceRoot, "instructions")}`);
   }
 
   if (!NAME_PATTERN.test(marketplace.name ?? "")) {

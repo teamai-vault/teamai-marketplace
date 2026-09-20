@@ -29,7 +29,7 @@ async function createCapabilityFixture(context) {
 
 test("user-instruction discovery keeps sorted relative paths and ignores non-files and links", async (context) => {
   const { marketplace } = await createCapabilityFixture(context);
-  const sourceRoot = path.join(marketplace, "user-instructions");
+  const sourceRoot = path.join(marketplace, "instructions");
   const outside = path.join(marketplace, "outside.instructions.md");
   const outsideDirectory = path.join(marketplace, "outside-instructions");
   const hardLinkSource = path.join(marketplace, "hard-link-source.instructions.md");
@@ -60,27 +60,27 @@ test("user-instruction discovery keeps sorted relative paths and ignores non-fil
   assert.deepEqual(await validateMarketplace(marketplace), []);
 });
 
-test("missing user-instructions source is an empty discovery result", async (context) => {
+test("missing user instructions source is an empty discovery result", async (context) => {
   const { marketplace } = await createCapabilityFixture(context);
 
   assert.deepEqual(await discoverMarketplaceUserInstructions(marketplace), []);
   assert.deepEqual(await validateMarketplace(marketplace), []);
 });
 
-test("validator rejects a regular file as the user-instructions source root", async (context) => {
+test("validator rejects a regular file as the user instructions source root", async (context) => {
   const { marketplace } = await createCapabilityFixture(context);
-  const sourceRoot = path.join(marketplace, "user-instructions");
+  const sourceRoot = path.join(marketplace, "instructions");
   await writeFile(sourceRoot, "not a directory\n", "utf8");
 
   assert.deepEqual(await validateMarketplace(marketplace), [
-    `Marketplace user-instructions source must be a directory: ${sourceRoot}`,
+    `Marketplace user instructions source must be a directory: ${sourceRoot}`,
   ]);
 });
 
-test("validator rejects a link-like user-instructions source root", async (context) => {
+test("validator rejects a link-like user instructions source root", async (context) => {
   const { marketplace } = await createCapabilityFixture(context);
-  const sourceRoot = path.join(marketplace, "user-instructions");
-  const outside = path.join(marketplace, "outside-user-instructions");
+  const sourceRoot = path.join(marketplace, "instructions");
+  const outside = path.join(marketplace, "outside-instructions");
   await mkdir(outside, { recursive: true });
   await writeFile(path.join(outside, "escape.instructions.md"), "outside\n", "utf8");
   await symlink(outside, sourceRoot, process.platform === "win32" ? "junction" : "dir");
@@ -88,8 +88,8 @@ test("validator rejects a link-like user-instructions source root", async (conte
   const errors = await validateMarketplace(marketplace);
 
   assert.equal(errors.length, 1);
-  assert.match(errors[0], /Marketplace user-instructions source must not be a link-like entry/);
-  assert.match(errors[0], /user-instructions/);
+  assert.match(errors[0], /Marketplace user instructions source must not be a link-like entry/);
+  assert.match(errors[0], /instructions/);
 });
 
 test("marketplace and Agent Plugins 1.0 manifests are structurally valid", async () => {
@@ -108,8 +108,8 @@ test("reference Marketplace publishes native global and nested user instructions
     "global.instructions.md",
   ]);
 
-  const global = await readFile(path.join(root, "user-instructions", "global.instructions.md"), "utf8");
-  const nested = await readFile(path.join(root, "user-instructions", "git", "commit.instructions.md"), "utf8");
+  const global = await readFile(path.join(root, "instructions", "global.instructions.md"), "utf8");
+  const nested = await readFile(path.join(root, "instructions", "git", "commit.instructions.md"), "utf8");
   assert.match(global, /applyTo: "\*\*"/);
   assert.match(nested, /applyTo: "\*\*"/);
   assert.doesNotMatch(global, /\b(?:level|priority|scope|trigger|action):/i);
