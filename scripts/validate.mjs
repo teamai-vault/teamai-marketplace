@@ -1,4 +1,4 @@
-import { readFile, readdir, realpath, stat } from "node:fs/promises";
+import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
@@ -20,6 +20,51 @@ const SENSITIVE_HEADER = /^(?:authorization|proxy-authorization|cookie|set-cooki
 function isOutside(root, target) {
   const relative = path.relative(root, target);
   return relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
+}
+
+export async function discoverMarketplaceUserInstructions(root = process.cwd()) {
+  const sourceRoot = path.join(path.resolve(root), "instructions");
+  const discovered = [];
+
+  async function visit(directory, isSourceRoot = false) {
+    let directoryInfo;
+    try {
+      directoryInfo = await lstat(directory);
+    } catch (error) {
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
+    if (!directoryInfo.isDirectory() || directoryInfo.isSymbolicLink()) {
+      if (isSourceRoot) {
+        const reason = directoryInfo.isSymbolicLink() ? "must not be a link-like entry" : "must be a directory";
+        throw new Error(`Marketplace user instructions source ${reason}: ${directory}`);
+      }
+      return;
+    }
+
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      let entryInfo;
+      try {
+        entryInfo = await lstat(entryPath);
+      } catch (error) {
+        if (error?.code === "ENOENT") continue;
+        throw error;
+      }
+      if (entryInfo.isSymbolicLink()) continue;
+      if (entryInfo.isDirectory()) {
+        await visit(entryPath);
+        continue;
+      }
+      if (!entryInfo.isFile() || entryInfo.nlink !== 1 || !entry.name.endsWith(".instructions.md")) continue;
+
+      const relativePath = path.relative(sourceRoot, entryPath).replaceAll(path.sep, "/");
+      if (relativePath && !isOutside(sourceRoot, entryPath)) discovered.push(relativePath);
+    }
+  }
+
+  await visit(sourceRoot, true);
+  return discovered.sort();
 }
 
 function isObject(value) {
@@ -209,6 +254,11 @@ export async function validateMarketplace(root = process.cwd()) {
   const marketplaceRoot = await realpath(path.resolve(root));
   const marketplacePath = path.join(marketplaceRoot, ".github", "plugin", "marketplace.json");
   const marketplace = JSON.parse(await readFile(marketplacePath, "utf8"));
+  try {
+    await discoverMarketplaceUserInstructions(marketplaceRoot);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : `Marketplace user instructions source could not be read: ${path.join(marketplaceRoot, "instructions")}`);
+  }
 
   if (!NAME_PATTERN.test(marketplace.name ?? "")) {
     errors.push(`Invalid marketplace name: ${marketplace.name ?? "<missing>"}`);
