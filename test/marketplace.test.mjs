@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { link, lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { link, lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -71,9 +71,10 @@ test("validator rejects a regular file as the user instructions source root", as
   const { marketplace } = await createCapabilityFixture(context);
   const sourceRoot = path.join(marketplace, "instructions");
   await writeFile(sourceRoot, "not a directory\n", "utf8");
+  const canonicalSourceRoot = path.join(await realpath(marketplace), "instructions");
 
   assert.deepEqual(await validateMarketplace(marketplace), [
-    `Marketplace user instructions source must be a directory: ${sourceRoot}`,
+    `Marketplace user instructions source must be a directory: ${canonicalSourceRoot}`,
   ]);
 });
 
