@@ -48,13 +48,14 @@ teamai-marketplace/
 │   ├── aos/
 │   ├── qa/
 │   ├── design/
-│   └── product-teamai/
-│       ├── plugin.json
-│       └── skills/teamai-change-readiness/SKILL.md
 ├── instructions/
 │   ├── global.instructions.md
 │   └── git/
 │       └── commit.instructions.md
+├── manifest/
+│   └── projects.yaml
+├── contexts/
+├── learnings/
 ├── docs/
 ├── scripts/
 └── test/
@@ -68,7 +69,21 @@ The optional `instructions/` directory carries native GitHub Copilot user instru
 
 `team-ai init` and `team-ai sync` mirror these files into the managed target `~/.copilot/instructions/team-ai/`. Team AI owns only that `team-ai/` subtree and must not modify personal instruction files elsewhere under `~/.copilot/instructions/` or `~/.copilot/copilot-instructions.md`.
 
-Use Copilot's native frontmatter, such as `applyTo`, unchanged. File names and folders are organizational only: they do not assign company, department, role, product, or action semantics, and no Marketplace manifest field is required.
+Use Copilot's native frontmatter, such as `applyTo`, unchanged. File names and folders are organizational only: they do not assign company, department, role, or action semantics, and no Marketplace manifest field is required.
+
+## Skills
+
+Skills stay at their physical source: `plugins/<plugin>/skills/<name>/` for Plugin capabilities and `skills/<name>/` for independently installable Team Skills. `skills.yaml` is the required governance index: every discovered Skill has a non-empty `owner`, optional string `tags`, and an optional `standalone` flag. Plugin Skills default to non-standalone; top-level Skills are always standalone.
+
+The CLI derives each Skill's source and path by scanning the repository. Do not duplicate source paths or Plugin names in `skills.yaml`.
+
+`team-ai skill install --tag <tag> --yes` resolves the matching names once; tags are not subscriptions. A top-level Skill such as `release-helper` can be copied to a managed personal Skill path. A Plugin Skill such as `common`'s `code-review` remains supplied by the enabled Plugin. The CLI rejects unowned personal-Skill collisions and removes only paths it recorded as owned.
+
+## Logical Projects and learnings
+
+`manifest/projects.yaml` defines optional business-context bindings. A Logical Project is not a Plugin and may omit `plugin`; its optional Plugin must use `kind: project`. The CLI projects `contexts/<id>/instructions/` into a bound physical repository's `.github/instructions/team-ai/<id>/`, and reads `contexts/<id>/docs/`, `learnings/<id>/`, and `learnings/shared/` through a generated pointer. New reference instructions use `applyTo: "**"`; the CLI preserves source bytes and frontmatter.
+
+The two project context roots are reserved Team AI projections. An unowned collision is refused, and the CLI adds only those roots to Git's resolved `info/exclude`. The Marketplace never copies into a business repository itself. Portable or path-specific `applyTo` behavior, authenticated model reading of ignored documentation, and runtime Plugin Rule execution remain unverified.
 
 ## Capability ownership
 
@@ -76,8 +91,7 @@ Use Copilot's native frontmatter, such as `applyTo`, unchanged. File names and f
 | --- | --- | --- |
 | Common | `common` | Useful across roles |
 | Role | `api`, `design` | Useful to one professional role |
-| Product | `product-teamai` | Shared capability across several repositories in one product |
-| Project | Not stored here | Must stay in the business repository under `.github/*` |
+| Project | Optional `kind: project` Plugin | Executable capability selected by a Logical Project manifest |
 
 Central plugin resource names should remain unique. Name collisions are packaging/configuration errors, not an invitation to create an override engine.
 
@@ -109,7 +123,7 @@ Team AI-managed plugins declare their type in the standard `extensions` object:
 }
 ```
 
-The metadata `kind` is one of `common`, `role`, or `product`. Role plugin names are bare identities such as `api`, `ios`, and `design`; the kind comes from metadata rather than a `role-` name prefix.
+The metadata `kind` is one of `common`, `role`, or `project`. Role plugin names are bare identities such as `api`, `ios`, and `design`; the kind comes from metadata rather than a `role-` name prefix.
 
 If the Team AI extension namespace must change, update both the Team AI CLI `TEAM_AI_EXTENSION_NAMESPACE` constant and the `extensions` namespace in every Marketplace `plugin.json` file.
 
@@ -146,7 +160,7 @@ The Marketplace validator checks these declarations without starting servers or 
 - `aos` — Android role package shell.
 - `qa` — QA role package shell.
 - `design` — product/experience design role shell with explicit `.gitkeep` placeholders.
-- `product-teamai` — cross-repository change-readiness guidance for the CLI and Marketplace repositories.
+- `manifest/projects.yaml` — optional-plugin-free `teamai` Logical Project reference.
 
 Example content is intentionally marked as example material. It is not represented as production company policy.
 
@@ -187,7 +201,7 @@ copilot plugins marketplace remove teamai --force
 
 ## Adding a capability
 
-1. Decide whether the capability is Common, Role, Product, or Project-only; record Common/Role/Product as the `kind` in the Team AI extension metadata.
+1. Decide whether the capability is Common, Role, or an optional Logical Project Plugin; record Common/Role/Project as the `kind` in the Team AI extension metadata.
 2. For shared capabilities, place it in the appropriate Agent Plugin using native Agent Plugin paths.
 3. Use a bare plugin name and keep central names unique; do not encode the type in a `role-` prefix.
 4. Do not create empty abstractions merely to mirror an architecture diagram; `.gitkeep` placeholders are acceptable only when they communicate an intentionally supported native location.
@@ -204,5 +218,5 @@ This repository does not:
 - define custom Plugin/Skill/Hook/MCP formats;
 - copy resources into IDE-specific locations;
 - implement a generic merge/override engine;
-- implement TeamWiki, Recall, Learning, telemetry, or dashboards;
+- implement learning retrieval/ranking, telemetry, or dashboards;
 - replace the native Copilot Marketplace or Plugin Manager.

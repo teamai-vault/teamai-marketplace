@@ -48,13 +48,14 @@ teamai-marketplace/
 │   ├── aos/
 │   ├── qa/
 │   ├── design/
-│   └── product-teamai/
-│       ├── plugin.json
-│       └── skills/teamai-change-readiness/SKILL.md
 ├── instructions/
 │   ├── global.instructions.md
 │   └── git/
 │       └── commit.instructions.md
+├── manifest/
+│   └── projects.yaml
+├── contexts/
+├── learnings/
 ├── docs/
 ├── scripts/
 └── test/
@@ -68,7 +69,21 @@ teamai-marketplace/
 
 `team-ai init` 与 `team-ai sync` 会把这些文件镜像到受管理的目标目录 `~/.copilot/instructions/team-ai/`。Team AI 只拥有 `team-ai/` 子树，不会修改 `~/.copilot/instructions/` 下的个人指令或 `~/.copilot/copilot-instructions.md`。
 
-请原样使用 Copilot 原生 frontmatter，例如 `applyTo`。文件名和目录名仅用于组织内容，不赋予 company、department、role、product 或 action 语义，也不需要新增 Marketplace manifest 字段。
+请原样使用 Copilot 原生 frontmatter，例如 `applyTo`。文件名和目录名仅用于组织内容，不赋予 company、department、role 或 action 语义，也不需要新增 Marketplace manifest 字段。
+
+## Skills
+
+Skill 保持在各自的物理来源：Plugin capability 位于 `plugins/<plugin>/skills/<name>/`，可独立安装的 Team Skill 位于 `skills/<name>/`。`skills.yaml` 是必需的治理索引：每个被发现的 Skill 必须有非空 `owner`，可选 string `tags` 和可选 `standalone`。Plugin 内 Skill 默认不可独立安装；顶级 Skill 天然可独立安装。
+
+CLI 通过扫描仓库推导每个 Skill 的来源和路径；不要在 `skills.yaml` 重复维护 source path 或 Plugin 名称。
+
+`team-ai skill install --tag <tag> --yes` 只在当次解析匹配 name；tag 不是订阅。顶级 Skill，例如 `release-helper`，可以复制到受管理的 personal Skill path。Plugin 内的 Skill，例如 `common` 的 `code-review`，由已启用的 Plugin 提供。CLI 会拒绝未拥有的 personal-Skill collision，并且只删除已记录 ownership 的路径。
+
+## Logical Projects 与 Learnings
+
+`manifest/projects.yaml` 定义可选的业务 context binding。Logical Project 不是 Plugin，可以不填写 `plugin`；若填写，必须是 `kind: project`。CLI 会将 `contexts/<id>/instructions/` 投影到绑定 Physical Repository 的 `.github/instructions/team-ai/<id>/`，再通过生成的 pointer 引用 `contexts/<id>/docs/`、`learnings/<id>/` 和 `learnings/shared/`。新的 reference instruction 统一使用 `applyTo: "**"`；CLI 保留 source bytes 和 frontmatter。
+
+这两个 Project context root 是 Team AI reserved projection。未声明 ownership 的 collision 会拒绝，CLI 只将这两个 root 写入 Git 解析后的 `info/exclude`。Marketplace 自己不会复制内容到业务 Repository。portable 或 path-specific `applyTo`、认证模型读取 ignored documentation 和 runtime Plugin Rule execution 仍未验证。
 
 ## Capability 归属
 
@@ -76,8 +91,7 @@ teamai-marketplace/
 | --- | --- | --- |
 | Common | `common` | 多个 Role 都能使用的共享能力 |
 | Role | `api`、`design` | 某个职业/职能共享能力 |
-| Product | `product-teamai` | 同一产品多个真实 Repo 共用的能力 |
-| Project | 不放在这里 | 必须跟真实业务 Repo 的 `.github/*` 一起版本管理 |
+| Project | 可选 `kind: project` Plugin | 由 Logical Project manifest 选择的可执行能力 |
 
 中央 Plugin 内的 Skill / Agent 等名称应尽量保持唯一。名称冲突视为 packaging/configuration error，而不是引入复杂 override engine 的理由。
 
@@ -109,7 +123,7 @@ Team AI 管理的 Plugin 使用标准 `extensions` 对象声明类型：
 }
 ```
 
-metadata 的 `kind` 只能是 `common`、`role` 或 `product`。Role Plugin 使用 `api`、`ios`、`design` 这类裸名称作为 identity，类型由 metadata 决定，不再通过 `role-` 名称前缀猜测。
+metadata 的 `kind` 只能是 `common`、`role` 或 `project`。Role Plugin 使用 `api`、`ios`、`design` 这类裸名称作为 identity，类型由 metadata 决定，不再通过 `role-` 名称前缀猜测。
 
 如果 Team AI extension namespace 必须变更，必须同时更新 Team AI CLI 的 `TEAM_AI_EXTENSION_NAMESPACE` 常量，以及 Marketplace 所有 `plugin.json` 文件中的 `extensions` namespace。
 
@@ -146,7 +160,7 @@ Marketplace Validator 只检查这些声明，不会启动 MCP Server 或执行 
 - `aos`：Android Role package shell。
 - `qa`：QA Role package shell。
 - `design`：产品/体验设计 Role shell，保留明确的 `.gitkeep` placeholder。
-- `product-teamai`：供 CLI 与 Marketplace 两个 Repo 共用的跨仓变更验收能力。
+- `manifest/projects.yaml`：不强制关联 Plugin 的 `teamai` Logical Project 示例。
 
 所有示例内容都会明确标注 Example，不会伪装成公司生产级规范。
 
@@ -185,7 +199,7 @@ copilot plugins marketplace remove teamai --force
 
 ## 新增 Capability
 
-1. 先判断它属于 Common、Role、Product，还是只属于某个真实 Project，并在 Team AI extension metadata 中记录对应的 `kind`。
+1. 先判断它属于 Common、Role，还是可选的 Logical Project Plugin，并在 Team AI extension metadata 中记录对应的 `kind`。
 2. 共享能力放到对应 Agent Plugin，并使用原生 Agent Plugin 目录。
 3. 使用裸 Plugin 名称并保持中央资源名称唯一，不要用 `role-` 前缀编码类型。
 4. 不为了架构图创建无意义空 abstraction；只有确实需要表达“这里是受支持的原生扩展点”时才使用 `.gitkeep`。
@@ -200,5 +214,5 @@ copilot plugins marketplace remove teamai --force
 - 自定义 Plugin / Skill / Hook / MCP 格式；
 - 把资源复制到不同 IDE 的私有目录；
 - 通用 merge / override engine；
-- TeamWiki、Recall、Learning、telemetry、dashboard；
+- Learning 检索/排序、telemetry、dashboard；
 - 替代 Copilot 原生 Marketplace / Plugin Manager。
