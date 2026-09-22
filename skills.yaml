@@ -1,0 +1,29 @@
+version: 1
+
+skills:
+  agents-map: { owner: common-team, tags: [repository, mapping] }
+  bootstrap: { owner: api-team, tags: [workflow, setup] }
+  code-review: { owner: common-team, tags: [review] }
+  delivery: { owner: api-team, tags: [delivery, workflow] }
+  diagnosing-bugs: { owner: common-team, tags: [debugging] }
+  domain-modeling: { owner: common-team, tags: [design, modeling] }
+  example-code-review: { owner: common-team, tags: [example, review] }
+  example-java-review: { owner: api-team, tags: [example, java] }
+  grill-me: { owner: common-team, tags: [planning] }
+  grill-with-docs: { owner: common-team, tags: [planning, documentation] }
+  grilling: { owner: common-team, tags: [planning] }
+  groundwork: { owner: api-team, tags: [coding, workflow] }
+  handoff: { owner: common-team, tags: [handoff] }
+  implement: { owner: common-team, tags: [implementation] }
+  improve-codebase-architecture: { owner: common-team, tags: [architecture] }
+  prototype: { owner: common-team, tags: [prototype] }
+  release-helper: { owner: release-team, tags: [release, experimental] }
+  resolving-merge-conflicts: { owner: common-team, tags: [git, merge] }
+  reviewit: { owner: api-team, tags: [review] }
+  show-me: { owner: common-team, tags: [explanation] }
+  tdd: { owner: common-team, tags: [testing] }
+  to-spec: { owner: common-team, tags: [planning, specification] }
+  to-tickets: { owner: common-team, tags: [planning, tickets] }
+  wait-what: { owner: common-team, tags: [clarification] }
+  wayfinder: { owner: common-team, tags: [planning] }
+  writing-for-agents: { owner: common-team, tags: [writing, agents] }

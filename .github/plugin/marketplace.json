@@ -43,12 +43,6 @@
       "description": "Shared Copilot capabilities for product and experience designers",
       "version": "0.1.0",
       "source": "./plugins/design"
-    },
-    {
-      "name": "product-teamai",
-      "description": "Cross-repository change readiness for Team AI maintainers",
-      "version": "0.1.0",
-      "source": "./plugins/product-teamai"
     }
   ]
 }

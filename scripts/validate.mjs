@@ -5,7 +5,7 @@ import process from "node:process";
 const AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 const TEAM_AI_EXTENSION_NAMESPACE = "com.company.teamai";
-const TEAM_AI_PLUGIN_KINDS = new Set(["common", "role", "product"]);
+const TEAM_AI_PLUGIN_KINDS = new Set(["common", "role", "project"]);
 const NAME_PATTERN = /^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$/;
 const HOOK_EVENTS = new Set([
   "agentStop", "errorOccurred", "notification", "permissionRequest", "postToolUse", "postToolUseFailure",
@@ -324,7 +324,7 @@ export async function validateMarketplace(root = process.cwd()) {
     if (!isObject(teamAiMetadata)) {
       errors.push(`${entry.name}: plugin.json must define extensions.${TEAM_AI_EXTENSION_NAMESPACE} metadata`);
     } else if (!TEAM_AI_PLUGIN_KINDS.has(teamAiMetadata.kind)) {
-      errors.push(`${entry.name}: extensions.${TEAM_AI_EXTENSION_NAMESPACE}.kind must be one of common, role, product`);
+      errors.push(`${entry.name}: extensions.${TEAM_AI_EXTENSION_NAMESPACE}.kind must be one of common, role, project`);
     }
     if (extensions && Object.keys(extensions).some((namespace) => namespace !== TEAM_AI_EXTENSION_NAMESPACE)) {
       errors.push(`${entry.name}: plugin.json extensions must use only ${TEAM_AI_EXTENSION_NAMESPACE} namespace`);
