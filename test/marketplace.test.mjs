@@ -117,9 +117,11 @@ test("reference Marketplace publishes native global and nested user instructions
   assert.doesNotMatch(nested, /\b(?:level|priority|scope|trigger|action):/i);
 });
 
-test("catalog publishes the Team AI product plugin", async () => {
+test("reference Marketplace publishes an optional-plugin-free Logical Project", async () => {
   const marketplace = JSON.parse(await readFile(path.join(root, ".github", "plugin", "marketplace.json"), "utf8"));
-  assert.ok(marketplace.plugins.some((plugin) => plugin.name === "product-teamai"));
+  const manifest = await readFile(path.join(root, "manifest", "projects.yaml"), "utf8");
+  assert.match(manifest, /id: teamai/);
+  assert.doesNotMatch(manifest, /plugin:/);
 });
 
 test("catalog publishes bare role plugin names", async () => {
@@ -129,7 +131,7 @@ test("catalog publishes bare role plugin names", async () => {
   assert.ok(!names.includes("role-api"));
 });
 
-test("plugins publish the three Team AI metadata kinds", async () => {
+test("plugins publish common and role Team AI metadata kinds", async () => {
   const expectedKinds = new Map([
     ["common", "common"],
     ["api", "role"],
@@ -137,7 +139,6 @@ test("plugins publish the three Team AI metadata kinds", async () => {
     ["aos", "role"],
     ["qa", "role"],
     ["design", "role"],
-    ["product-teamai", "product"],
   ]);
   for (const [name, kind] of expectedKinds) {
     const manifest = JSON.parse(await readFile(path.join(root, "plugins", name, "plugin.json"), "utf8"));
@@ -166,7 +167,7 @@ test("validator rejects unsupported Team AI metadata kinds and namespaces", asyn
   await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
 
   assert.deepEqual(await validateMarketplace(marketplace), [
-    "test-plugin: extensions.com.company.teamai.kind must be one of common, role, product",
+    "test-plugin: extensions.com.company.teamai.kind must be one of common, role, project",
     "test-plugin: plugin.json extensions must use only com.company.teamai namespace",
   ]);
 });

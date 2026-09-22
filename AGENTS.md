@@ -5,7 +5,7 @@ This repository publishes the department Marketplace catalog, its Agent Plugins 
 ## Boundaries
 
 - `.github/plugin/marketplace.json` is the canonical catalog. Each entry points to a source below `plugins/`; that Plugin owns its root `plugin.json` and capability files.
-- Plugin categories live only at `extensions["com.company.teamai"].kind` with `common`, `role`, or `product`. Keep role Plugin names bare, such as `api`, rather than encoding the category in the name.
+- Plugin categories live only at `extensions["com.company.teamai"].kind` with `common`, `role`, or `project`. Keep role Plugin names bare, such as `api`, rather than encoding the category in the name.
 - Keep Plugin-relative executables and resources inside their Plugin source. `scripts/validate.mjs` enforces real-path containment and rejects linked escape paths.
 
 ## Change map
