@@ -3,7 +3,7 @@
   "name": "design",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for product and experience designers",
-  "keywords": ["team-ai", "role", "design"],
+  "keywords": ["teamai", "role", "design"],
   "extensions": {
     "com.company.teamai": {
       "kind": "role"

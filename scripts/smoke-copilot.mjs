@@ -24,7 +24,7 @@ async function run(args) {
 }
 
 try {
-  profile = await mkdtemp(path.join(os.tmpdir(), "team-ai-copilot-smoke-"));
+  profile = await mkdtemp(path.join(os.tmpdir(), "teamai-copilot-smoke-"));
   const copilotHome = path.join(profile, ".copilot");
   const cacheHome = path.join(profile, ".cache");
   const appData = path.join(profile, "AppData", "Roaming");

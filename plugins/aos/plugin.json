@@ -3,7 +3,7 @@
   "name": "aos",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for Android engineers",
-  "keywords": ["team-ai", "android"],
+  "keywords": ["teamai", "android"],
   "extensions": {
     "com.company.teamai": {
       "kind": "role"

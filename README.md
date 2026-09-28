@@ -6,7 +6,7 @@ Reference/template GitHub Copilot Plugin Marketplace for reusable Team AI capabi
 
 This repository is the **reference implementation and template** for a department-owned Marketplace. It uses GitHub Copilot's native Marketplace and Agent Plugins 1.0 conventions; it does not define a Team AI-specific plugin format.
 
-The `team-ai` CLI is not bound to this repository or to the Marketplace ID `teamai`. Different departments can clone/derive this repository, choose their own Marketplace `name`, maintain their own capabilities, and use the same company-wide CLI.
+The `teamai` CLI is not bound to this repository or to the Marketplace ID `teamai`. Different departments can clone/derive this repository, choose their own Marketplace `name`, maintain their own capabilities, and use the same company-wide CLI.
 
 ## Use as a department template
 
@@ -17,7 +17,7 @@ The `team-ai` CLI is not bound to this repository or to the Marketplace ID `team
 5. Initialize the generic CLI with that repository source:
 
 ```powershell
-team-ai init `
+teamai init `
   --marketplace https://github.com/example-org/department-ai-marketplace.git `
   --role api
 ```
@@ -67,7 +67,7 @@ The `common` plugin intentionally contains empty native capability directories w
 
 The optional `instructions/` directory carries native GitHub Copilot user instructions. Every regular file below it whose name ends in `.instructions.md` is discovered recursively; other files are ignored and link-like entries are never followed. Relative paths and file contents are preserved.
 
-`team-ai init` and `team-ai sync` mirror these files into the managed target `~/.copilot/instructions/team-ai/`. Team AI owns only that `team-ai/` subtree and must not modify personal instruction files elsewhere under `~/.copilot/instructions/` or `~/.copilot/copilot-instructions.md`.
+`teamai init` and `teamai sync` mirror these files into the managed target `~/.copilot/instructions/teamai/`. Team AI owns only that `teamai/` subtree and must not modify personal instruction files elsewhere under `~/.copilot/instructions/` or `~/.copilot/copilot-instructions.md`.
 
 Use Copilot's native frontmatter, such as `applyTo`, unchanged. File names and folders are organizational only: they do not assign company, department, role, or action semantics, and no Marketplace manifest field is required.
 
@@ -77,11 +77,11 @@ Skills stay at their physical source: `plugins/<plugin>/skills/<name>/` for Plug
 
 The CLI derives each Skill's source and path by scanning the repository. Do not duplicate source paths or Plugin names in `skills.yaml`.
 
-`team-ai skill install --tag <tag> --yes` resolves the matching names once; tags are not subscriptions. A top-level Skill such as `release-helper` can be copied to a managed personal Skill path. A Plugin Skill such as `common`'s `code-review` remains supplied by the enabled Plugin. The CLI rejects unowned personal-Skill collisions and removes only paths it recorded as owned.
+`teamai skill install --tag <tag> --yes` resolves the matching names once; tags are not subscriptions. A top-level Skill such as `release-helper` can be copied to a managed personal Skill path. A Plugin Skill such as `common`'s `code-review` remains supplied by the enabled Plugin. The CLI rejects unowned personal-Skill collisions and removes only paths it recorded as owned.
 
 ## Logical Projects and learnings
 
-`manifest/projects.yaml` defines optional business-context bindings. A Logical Project is not a Plugin and may omit `plugin`; its optional Plugin must use `kind: project`. The CLI projects `contexts/<id>/instructions/` into a bound physical repository's `.github/instructions/team-ai/<id>/`, and reads `contexts/<id>/docs/`, `learnings/<id>/`, and `learnings/shared/` through a generated pointer. New reference instructions use `applyTo: "**"`; the CLI preserves source bytes and frontmatter.
+`manifest/projects.yaml` defines optional business-context bindings. A Logical Project is not a Plugin and may omit `plugin`; its optional Plugin must use `kind: project`. The CLI projects `contexts/<id>/instructions/` into a bound physical repository's `.github/instructions/teamai/<id>/`, and reads `contexts/<id>/docs/`, `learnings/<id>/`, and `learnings/shared/` through a generated pointer. New reference instructions use `applyTo: "**"`; the CLI preserves source bytes and frontmatter.
 
 The two project context roots are reserved Team AI projections. An unowned collision is refused, and the CLI adds only those roots to Git's resolved `info/exclude`. The Marketplace never copies into a business repository itself. Portable or path-specific `applyTo` behavior, authenticated model reading of ignored documentation, and runtime Plugin Rule execution remain unverified.
 
@@ -209,7 +209,7 @@ copilot plugins marketplace remove teamai --force
 6. Run validation/tests before review.
 
 See [`docs/PLUGIN-GUIDE.md`](docs/PLUGIN-GUIDE.md) and [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
-The cross-repository version policy lives in [`teamai-cli-customization/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-customization/blob/main/docs/VERSIONING.md).
+The cross-repository version policy lives in [`teamai-cli-copilot/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-copilot/blob/main/docs/VERSIONING.md).
 
 ## Non-goals
 

@@ -3,7 +3,7 @@
   "name": "common",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities useful across engineering roles",
-  "keywords": ["team-ai", "common", "example"],
+  "keywords": ["teamai", "common", "example"],
   "extensions": {
     "com.company.teamai": {
       "kind": "common"
