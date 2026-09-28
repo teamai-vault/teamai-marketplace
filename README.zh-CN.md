@@ -6,7 +6,7 @@
 
 这个 Repo 是“部门自有 Marketplace”的参考实现和模板。它直接使用 GitHub Copilot Marketplace 与 Agent Plugins 1.0 规范，不定义 Team AI 私有 Plugin 格式。
 
-`team-ai` CLI 不再绑定这个 Repo，也不绑定 `teamai` 这个 Marketplace ID。不同部门可以 clone / derive 本 Repo，使用自己的 Marketplace `name` 和共享能力，但所有部门继续安装、维护同一份公司级 CLI。
+`teamai` CLI 不再绑定这个 Repo，也不绑定 `teamai` 这个 Marketplace ID。不同部门可以 clone / derive 本 Repo，使用自己的 Marketplace `name` 和共享能力，但所有部门继续安装、维护同一份公司级 CLI。
 
 ## 作为部门 Marketplace 模板使用
 
@@ -17,7 +17,7 @@
 5. 使用这个 Repo 的 source 初始化统一 CLI：
 
 ```powershell
-team-ai init `
+teamai init `
   --marketplace https://github.com/example-org/department-ai-marketplace.git `
   --role api
 ```
@@ -67,7 +67,7 @@ teamai-marketplace/
 
 可选的 `instructions/` 目录用于承载 GitHub Copilot 原生用户级指令。目录下所有名称以 `.instructions.md` 结尾的 regular file 都会递归发现；其他文件会被忽略，link-like entry 不会被跟随。相对路径和文件内容都会原样保留。
 
-`team-ai init` 与 `team-ai sync` 会把这些文件镜像到受管理的目标目录 `~/.copilot/instructions/team-ai/`。Team AI 只拥有 `team-ai/` 子树，不会修改 `~/.copilot/instructions/` 下的个人指令或 `~/.copilot/copilot-instructions.md`。
+`teamai init` 与 `teamai sync` 会把这些文件镜像到受管理的目标目录 `~/.copilot/instructions/teamai/`。Team AI 只拥有 `teamai/` 子树，不会修改 `~/.copilot/instructions/` 下的个人指令或 `~/.copilot/copilot-instructions.md`。
 
 请原样使用 Copilot 原生 frontmatter，例如 `applyTo`。文件名和目录名仅用于组织内容，不赋予 company、department、role 或 action 语义，也不需要新增 Marketplace manifest 字段。
 
@@ -77,11 +77,11 @@ Skill 保持在各自的物理来源：Plugin capability 位于 `plugins/<plugin
 
 CLI 通过扫描仓库推导每个 Skill 的来源和路径；不要在 `skills.yaml` 重复维护 source path 或 Plugin 名称。
 
-`team-ai skill install --tag <tag> --yes` 只在当次解析匹配 name；tag 不是订阅。顶级 Skill，例如 `release-helper`，可以复制到受管理的 personal Skill path。Plugin 内的 Skill，例如 `common` 的 `code-review`，由已启用的 Plugin 提供。CLI 会拒绝未拥有的 personal-Skill collision，并且只删除已记录 ownership 的路径。
+`teamai skill install --tag <tag> --yes` 只在当次解析匹配 name；tag 不是订阅。顶级 Skill，例如 `release-helper`，可以复制到受管理的 personal Skill path。Plugin 内的 Skill，例如 `common` 的 `code-review`，由已启用的 Plugin 提供。CLI 会拒绝未拥有的 personal-Skill collision，并且只删除已记录 ownership 的路径。
 
 ## Logical Projects 与 Learnings
 
-`manifest/projects.yaml` 定义可选的业务 context binding。Logical Project 不是 Plugin，可以不填写 `plugin`；若填写，必须是 `kind: project`。CLI 会将 `contexts/<id>/instructions/` 投影到绑定 Physical Repository 的 `.github/instructions/team-ai/<id>/`，再通过生成的 pointer 引用 `contexts/<id>/docs/`、`learnings/<id>/` 和 `learnings/shared/`。新的 reference instruction 统一使用 `applyTo: "**"`；CLI 保留 source bytes 和 frontmatter。
+`manifest/projects.yaml` 定义可选的业务 context binding。Logical Project 不是 Plugin，可以不填写 `plugin`；若填写，必须是 `kind: project`。CLI 会将 `contexts/<id>/instructions/` 投影到绑定 Physical Repository 的 `.github/instructions/teamai/<id>/`，再通过生成的 pointer 引用 `contexts/<id>/docs/`、`learnings/<id>/` 和 `learnings/shared/`。新的 reference instruction 统一使用 `applyTo: "**"`；CLI 保留 source bytes 和 frontmatter。
 
 这两个 Project context root 是 Team AI reserved projection。未声明 ownership 的 collision 会拒绝，CLI 只将这两个 root 写入 Git 解析后的 `info/exclude`。Marketplace 自己不会复制内容到业务 Repository。portable 或 path-specific `applyTo`、认证模型读取 ignored documentation 和 runtime Plugin Rule execution 仍未验证。
 
@@ -207,7 +207,7 @@ copilot plugins marketplace remove teamai --force
 6. Review 前运行 validator/test。
 
 更多规则见 [`docs/PLUGIN-GUIDE.md`](docs/PLUGIN-GUIDE.md) 与 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)。
-跨仓版本策略见 [`teamai-cli-customization/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-customization/blob/main/docs/VERSIONING.md)。
+跨仓版本策略见 [`teamai-cli-copilot/docs/VERSIONING.md`](https://github.com/teamai-vault/teamai-cli-copilot/blob/main/docs/VERSIONING.md)。
 
 ## 当前明确不做
 

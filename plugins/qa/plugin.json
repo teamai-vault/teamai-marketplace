@@ -3,7 +3,7 @@
   "name": "qa",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for QA engineers",
-  "keywords": ["team-ai", "qa"],
+  "keywords": ["teamai", "qa"],
   "extensions": {
     "com.company.teamai": {
       "kind": "role"

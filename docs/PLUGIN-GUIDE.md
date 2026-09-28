@@ -33,7 +33,7 @@ If the Team AI extension namespace must change, update both the Team AI CLI `TEA
 4. Do not add placeholder directories just to match an architecture diagram. `.gitkeep` is acceptable when a plugin intentionally documents a supported native extension location.
 5. Bump both `plugin.json` and the matching `.github/plugin/marketplace.json` entry when publishing a new plugin version.
 6. Run `npm run validate` and `npm test` before proposing a marketplace change.
-7. Follow the cross-repository version policy in `teamai-cli-customization/docs/VERSIONING.md`.
+7. Follow the cross-repository version policy in `teamai-cli-copilot/docs/VERSIONING.md`.
 
 ## Logical Project content
 

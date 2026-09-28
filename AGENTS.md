@@ -1,6 +1,6 @@
 # Team AI Marketplace
 
-This repository publishes the department Marketplace catalog, its Agent Plugins 1.0 sources, and native Copilot user-instruction sources. The sibling `../teamai-cli-customization` repository owns CLI discovery, mirroring, and installation behavior; coordinate changes that alter those shared contracts.
+This repository publishes the department Marketplace catalog, its Agent Plugins 1.0 sources, and native Copilot user-instruction sources. The sibling `../teamai-cli-copilot` repository owns CLI discovery, mirroring, and installation behavior; coordinate changes that alter those shared contracts.
 
 ## Boundaries
 
@@ -14,7 +14,7 @@ This repository publishes the department Marketplace catalog, its Agent Plugins 
 - When adding a user instruction, edit only `instructions/` and add or update the discovery assertions in `test/marketplace.test.mjs` when the contract changes.
 - When changing the user-instruction source, discovery, or mirroring contract, read `docs/development/instructions-contract.md` first and coordinate the sibling CLI change.
 - When changing validation, trace `.github/plugin/marketplace.json` -> Plugin source -> `plugin.json` -> optional native declarations -> `skills/*/SKILL.md` in `scripts/validate.mjs`, and cover the accepted and rejected boundary in `test/marketplace.test.mjs`.
-- When publishing versions, read `../teamai-cli-customization/docs/VERSIONING.md`. Keep `package.json` aligned with `marketplace.metadata.version`, and each changed Plugin's `plugin.json` version aligned with its catalog entry.
+- When publishing versions, read `../teamai-cli-copilot/docs/VERSIONING.md`. Keep `package.json` aligned with `marketplace.metadata.version`, and each changed Plugin's `plugin.json` version aligned with its catalog entry.
 - When changing `com.company.teamai`, update every Plugin manifest and the sibling CLI's `TEAM_AI_EXTENSION_NAMESPACE` in the same coordinated change.
 
 ## Verification

@@ -3,7 +3,7 @@
   "name": "ios",
   "version": "0.1.0",
   "description": "Shared Copilot capabilities for iOS engineers",
-  "keywords": ["team-ai", "ios"],
+  "keywords": ["teamai", "ios"],
   "extensions": {
     "com.company.teamai": {
       "kind": "role"

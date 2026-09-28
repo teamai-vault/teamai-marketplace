@@ -14,9 +14,9 @@ Discovery does not follow link-like entries. Nested content must remain containe
 
 ## CLI ownership
 
-The sibling `../teamai-cli-customization` repository consumes this source contract. Its CLI mirrors the desired files to `~/.copilot/instructions/team-ai/`, preserving relative paths and content while creating, updating, and removing entries inside that managed subtree.
+The sibling `../teamai-cli-copilot` repository consumes this source contract. Its CLI mirrors the desired files to `~/.copilot/instructions/teamai/`, preserving relative paths and content while creating, updating, and removing entries inside that managed subtree.
 
-Team AI owns only `~/.copilot/instructions/team-ai/`. The CLI leaves personal files elsewhere under `~/.copilot/instructions/` and `~/.copilot/copilot-instructions.md` untouched.
+Team AI owns only `~/.copilot/instructions/teamai/`. The CLI leaves personal files elsewhere under `~/.copilot/instructions/` and `~/.copilot/copilot-instructions.md` untouched.
 
 ## Evolution
 

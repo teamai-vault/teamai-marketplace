@@ -10,9 +10,9 @@ Before opening a pull request:
 4. Mark sample-only content clearly.
 5. Run `npm run validate` and `npm test`.
 6. Run `npm run test:copilot` when Marketplace or Plugin packaging changes.
-7. Apply the version policy in `teamai-cli-customization/docs/VERSIONING.md`.
-8. For a local Learning use `team-ai learning share <file> [--project <id>|--shared]`; for a local Skill use `team-ai skill contribute <path> --owner <owner> --target standalone|plugin [--plugin <plugin>]`. Inspect the resulting PR before merge.
+7. Apply the version policy in `teamai-cli-copilot/docs/VERSIONING.md`.
+8. For a local Learning use `teamai learning share <file> [--project <id>|--shared]`; for a local Skill use `teamai skill contribute <path> --owner <owner> --target standalone|plugin [--plugin <plugin>]`. Inspect the resulting PR before merge.
 
 If the Team AI extension namespace must change, update both the Team AI CLI `TEAM_AI_EXTENSION_NAMESPACE` constant and the `extensions` namespace in every Marketplace `plugin.json` file.
 
-There is no generic `team-ai contribute` command and no automated publish command.
+There is no generic `teamai contribute` command and no automated publish command.

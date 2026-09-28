@@ -9,7 +9,7 @@ import { discoverMarketplaceUserInstructions, validateMarketplace } from "../scr
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 async function createCapabilityFixture(context) {
-  const marketplace = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-capability-"));
+  const marketplace = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-capability-"));
   context.after(() => rm(marketplace, { recursive: true, force: true }));
   const plugin = path.join(marketplace, "plugins", "test-plugin");
   await mkdir(path.join(marketplace, ".github", "plugin"), { recursive: true });
@@ -173,7 +173,7 @@ test("validator rejects unsupported Team AI metadata kinds and namespaces", asyn
 });
 
 test("validator rejects plugin sources outside the marketplace repository", async (context) => {
-  const parent = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-boundary-"));
+  const parent = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-boundary-"));
   context.after(() => rm(parent, { recursive: true, force: true }));
   const marketplace = path.join(parent, "marketplace");
   const outside = path.join(parent, "outside-plugin");
@@ -196,7 +196,7 @@ test("validator rejects plugin sources outside the marketplace repository", asyn
 });
 
 test("validator rejects in-repository links to outside plugins", async (context) => {
-  const parent = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-link-boundary-"));
+  const parent = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-link-boundary-"));
   context.after(() => rm(parent, { recursive: true, force: true }));
   const marketplace = path.join(parent, "marketplace");
   const outside = path.join(parent, "outside-plugin");
@@ -221,7 +221,7 @@ test("validator rejects in-repository links to outside plugins", async (context)
 });
 
 test("validator rejects skills without a description", async (context) => {
-  const marketplace = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-skill-"));
+  const marketplace = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-skill-"));
   context.after(() => rm(marketplace, { recursive: true, force: true }));
   const plugin = path.join(marketplace, "plugins", "test-plugin");
   await mkdir(path.join(marketplace, ".github", "plugin"), { recursive: true });
@@ -244,7 +244,7 @@ test("validator rejects skills without a description", async (context) => {
 });
 
 test("validator rejects plugin content links outside the plugin source", async (context) => {
-  const parent = await mkdtemp(path.join(os.tmpdir(), "team-ai-marketplace-content-boundary-"));
+  const parent = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-content-boundary-"));
   context.after(() => rm(parent, { recursive: true, force: true }));
   const marketplace = path.join(parent, "marketplace");
   const outside = path.join(parent, "outside");
