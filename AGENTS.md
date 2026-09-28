@@ -23,3 +23,17 @@ This repository publishes the department Marketplace catalog, its Agent Plugins 
 - Repository tests: `npm test` (Node's built-in test runner; no local dependency install is required).
 - For Marketplace catalog, Plugin packaging, or Copilot adapter changes: `npm run test:copilot`. It requires global GitHub Copilot CLI `1.0.83` and exercises real add, browse, and install operations in an isolated temporary profile.
 - CI runs validate/tests on Windows and macOS with Node 20, and the Copilot contract smoke with Node 22 plus Copilot CLI `1.0.83`. Record any unexecuted platform rather than inferring parity.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live in this repo's GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five default triage labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use a single-context layout. See `docs/agents/domain.md`.
