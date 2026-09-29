@@ -31,14 +31,14 @@ If the Team AI extension namespace must change, update both the Team AI CLI `TEA
 2. Put portable skills under `skills/<name>/SKILL.md`.
 3. Put Copilot-specific agents, rules, commands, and hooks under `com.github.copilot/`.
 4. Do not add placeholder directories just to match an architecture diagram. `.gitkeep` is acceptable when a plugin intentionally documents a supported native extension location.
-5. Bump both `plugin.json` and the matching `.github/plugin/marketplace.json` entry when publishing a new plugin version.
-6. Run `npm run validate` and `npm test` before proposing a marketplace change.
+5. When shipped Plugin content changes, bump that Plugin's version in both `plugin.json` and its `.github/plugin/marketplace.json` entry. Leave unchanged Plugins at their current versions.
+6. Run `npm run validate -- --base <release-base>` and `npm test` before proposing a marketplace change; use a fixed commit or ref as the validation base.
 7. Follow the cross-repository version policy in `teamai-cli-copilot/docs/VERSIONING.md`.
 
 ## Logical Project content
 
-- Define Logical Projects in `manifest/projects.yaml`; reserve `shared` for common learnings.
-- Put project instructions in `contexts/<id>/instructions/`, docs in `contexts/<id>/docs/`, and learnings in `learnings/<id>/`; keep the reference frontmatter `applyTo: "**"`.
+- Define Logical Projects in `manifest/projects.yaml`.
+- Put project instructions in `contexts/<id>/instructions/` and docs in `contexts/<id>/docs/`. Published Learnings belong only on the same repository's `teamai-learnings` branch, under `learnings/shared/` or `learnings/<actual-logical-project-id>/`; do not add a root `learnings/` directory to the resource branch. Keep reference instruction frontmatter `applyTo: "**"`.
 - A Project Plugin is optional executable capability. It must be declared as `kind: project` and referenced by the Logical Project manifest; it does not turn a Physical Project into a Plugin.
 - The CLI mirrors only its two owned projection roots into the physical repository and rejects unowned collisions. Do not add a second resource/projection mechanism here.
 

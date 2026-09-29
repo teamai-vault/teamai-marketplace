@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { link, lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -8,16 +9,18 @@ import { discoverMarketplaceUserInstructions, validateMarketplace } from "../scr
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-async function createCapabilityFixture(context) {
+async function createCapabilityFixture(context, sourceDirectory = "plugins", sourceName = "test-plugin") {
   const marketplace = await mkdtemp(path.join(os.tmpdir(), "teamai-marketplace-capability-"));
   context.after(() => rm(marketplace, { recursive: true, force: true }));
-  const plugin = path.join(marketplace, "plugins", "test-plugin");
+  const plugin = path.join(marketplace, sourceDirectory, sourceName);
   await mkdir(path.join(marketplace, ".github", "plugin"), { recursive: true });
   await mkdir(plugin, { recursive: true });
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
     name: "test-marketplace",
-    plugins: [{ name: "test-plugin", version: "0.1.0", source: "./plugins/test-plugin" }],
+    metadata: { version: "0.1.0" },
+    plugins: [{ name: "test-plugin", version: "0.1.0", source: `./${sourceDirectory}/${sourceName}` }],
   }), "utf8");
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.1.0" }), "utf8");
   await writeFile(path.join(plugin, "plugin.json"), JSON.stringify({
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "test-plugin",
@@ -103,6 +106,192 @@ test("catalog metadata version matches the private package version", async () =>
   assert.equal(marketplace.metadata?.version, packageJson.version);
 });
 
+test("validator rejects a mismatch between catalog metadata and package version", async (context) => {
+  const { marketplace } = await createCapabilityFixture(context);
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.2.0" }), "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    "Marketplace metadata version 0.1.0 does not match package.json 0.2.0",
+  ]);
+});
+
+test("validator rejects published Learning files in the resource branch", async (context) => {
+  const { marketplace } = await createCapabilityFixture(context);
+  const sample = path.join(marketplace, "learnings", "shared", "reference.md");
+  await mkdir(path.dirname(sample), { recursive: true });
+  await writeFile(sample, "# Reference\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace), [
+    "Resource branch must not contain a root learnings/ directory; published Learnings come from teamai-learnings",
+  ]);
+});
+
+test("validator requires a Plugin version bump when content changes from the release base", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const pluginReadme = path.join(plugin, "Validation-参考.md");
+  await writeFile(pluginReadme, "Initial content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  await writeFile(pluginReadme, "Changed content.\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+
+  const manifestPath = path.join(plugin, "plugin.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const catalogPath = path.join(marketplace, ".github", "plugin", "marketplace.json");
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+
+  manifest.version = "0.0.9";
+  catalog.plugins[0].version = "0.0.9";
+  await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+
+  manifest.version = "0.1.1";
+  catalog.plugins[0].version = "0.1.1";
+  await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), []);
+});
+
+test("release version check follows catalog sources outside plugins/", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context, "capabilities");
+  const sourceFile = path.join(plugin, "reference.md");
+  await writeFile(sourceFile, "Initial content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  await writeFile(sourceFile, "Changed content.\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+});
+
+test("release version check treats a repository-root source as covering all files", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const manifest = await readFile(path.join(plugin, "plugin.json"), "utf8");
+  await writeFile(path.join(marketplace, "plugin.json"), manifest, "utf8");
+  const catalogPath = path.join(marketplace, ".github", "plugin", "marketplace.json");
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  catalog.plugins[0].source = ".";
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+  const readme = path.join(marketplace, "README.md");
+  await writeFile(readme, "Initial content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  await writeFile(readme, "Changed content.\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+});
+
+test("release version check requires a bump when the catalog source changes", async (context) => {
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const alternate = path.join(marketplace, "plugins", "alternate");
+  await mkdir(alternate, { recursive: true });
+  const manifest = await readFile(path.join(plugin, "plugin.json"), "utf8");
+  await writeFile(path.join(alternate, "plugin.json"), manifest, "utf8");
+  await writeFile(path.join(plugin, "content.md"), "Source A content.\n", "utf8");
+  await writeFile(path.join(alternate, "content.md"), "Source B content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  const catalogPath = path.join(marketplace, ".github", "plugin", "marketplace.json");
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  catalog.plugins[0].source = "./plugins/alternate";
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+});
+
+test("release version check follows the real target of an in-repository symlink source", async (context) => {
+  if (process.platform === "win32") {
+    context.skip("Git for Windows records directory junction contents under the junction path");
+    return;
+  }
+
+  const { marketplace, plugin } = await createCapabilityFixture(context, "plugins", "real");
+  const link = path.join(marketplace, "plugins", "link");
+  await symlink("real", link, "dir");
+  const catalogPath = path.join(marketplace, ".github", "plugin", "marketplace.json");
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  catalog.plugins[0].source = "./plugins/link";
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+  const content = path.join(plugin, "content.md");
+  await writeFile(content, "Initial content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  await writeFile(content, "Changed content.\n", "utf8");
+  assert.deepEqual(git(["diff", "--name-only", "--no-renames", "-z", baseRef, "--"]).split("\0").filter(Boolean), [
+    "plugins/real/content.md",
+  ]);
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+});
+
+test("release version check resolves actual source casing on Windows", async (context) => {
+  if (process.platform !== "win32") {
+    context.skip("case-insensitive source paths are specific to Windows");
+    return;
+  }
+
+  const { marketplace, plugin } = await createCapabilityFixture(context);
+  const catalogPath = path.join(marketplace, ".github", "plugin", "marketplace.json");
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+  catalog.plugins[0].source = "./PLUGINS/TEST-PLUGIN";
+  await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
+  const actualSource = await realpath(path.resolve(marketplace, catalog.plugins[0].source));
+  assert.equal(path.relative(marketplace, actualSource).replaceAll(path.sep, "/"), "plugins/test-plugin");
+  const content = path.join(plugin, "content.md");
+  await writeFile(content, "Initial content.\n", "utf8");
+  const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
+  git(["init", "-b", "main"]);
+  git(["config", "user.name", "Marketplace test"]);
+  git(["config", "user.email", "marketplace-test@example.invalid"]);
+  git(["add", "."]);
+  git(["commit", "-m", "baseline"]);
+  const baseRef = git(["rev-parse", "HEAD"]);
+  await writeFile(content, "Changed content.\n", "utf8");
+
+  assert.deepEqual(await validateMarketplace(marketplace, { baseRef }), [
+    `test-plugin: Plugin content changed from base ${baseRef} without a higher SemVer version`,
+  ]);
+});
+
 test("reference Marketplace publishes native global and nested user instructions", async () => {
   assert.deepEqual(await discoverMarketplaceUserInstructions(root), [
     "git/commit.instructions.md",
@@ -181,8 +370,10 @@ test("validator rejects plugin sources outside the marketplace repository", asyn
   await mkdir(outside, { recursive: true });
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
     name: "test-marketplace",
+    metadata: { version: "0.1.0" },
     plugins: [{ name: "outside-plugin", version: "0.1.0", source: "../outside-plugin" }],
   }), "utf8");
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.1.0" }), "utf8");
   await writeFile(path.join(outside, "plugin.json"), JSON.stringify({
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "outside-plugin",
@@ -206,8 +397,10 @@ test("validator rejects in-repository links to outside plugins", async (context)
   await symlink(outside, path.join(marketplace, "plugins", "linked-plugin"), process.platform === "win32" ? "junction" : "dir");
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
     name: "test-marketplace",
+    metadata: { version: "0.1.0" },
     plugins: [{ name: "linked-plugin", version: "0.1.0", source: "./plugins/linked-plugin" }],
   }), "utf8");
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.1.0" }), "utf8");
   await writeFile(path.join(outside, "plugin.json"), JSON.stringify({
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "linked-plugin",
@@ -228,8 +421,10 @@ test("validator rejects skills without a description", async (context) => {
   await mkdir(path.join(plugin, "skills", "test-skill"), { recursive: true });
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
     name: "test-marketplace",
+    metadata: { version: "0.1.0" },
     plugins: [{ name: "test-plugin", version: "0.1.0", source: "./plugins/test-plugin" }],
   }), "utf8");
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.1.0" }), "utf8");
   await writeFile(path.join(plugin, "plugin.json"), JSON.stringify({
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     name: "test-plugin",
@@ -253,8 +448,10 @@ test("validator rejects plugin content links outside the plugin source", async (
   await mkdir(outside, { recursive: true });
   await writeFile(path.join(marketplace, ".github", "plugin", "marketplace.json"), JSON.stringify({
     name: "test-marketplace",
+    metadata: { version: "0.1.0" },
     plugins: plugins.map((name) => ({ name, version: "0.1.0", source: `./plugins/${name}` })),
   }), "utf8");
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.1.0" }), "utf8");
 
   const manifest = (name) => JSON.stringify({
     $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",

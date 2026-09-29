@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -118,6 +119,21 @@ function validateUrl(value, label, errors, requireHttps = false) {
   }
   if (url.username || url.password) errors.push(`${label} must not contain credentials`);
   if (url.hash) errors.push(`${label} must not contain a fragment`);
+}
+
+function isNewerVersion(current, previous) {
+  const parse = (version) => {
+    if (typeof version !== "string") return undefined;
+    const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(version);
+    return match?.slice(1).map(BigInt);
+  };
+  const currentParts = parse(current);
+  const previousParts = parse(previous);
+  if (!currentParts || !previousParts) return false;
+  for (let index = 0; index < currentParts.length; index += 1) {
+    if (currentParts[index] !== previousParts[index]) return currentParts[index] > previousParts[index];
+  }
+  return false;
 }
 
 async function validatePluginFile(pluginRoot, value, label, errors) {
@@ -249,11 +265,131 @@ async function validateHookConfig(config, pluginRoot, pluginName, errors) {
   }
 }
 
-export async function validateMarketplace(root = process.cwd()) {
+function resolveGitSourcePath(root, baseRef, sourcePath) {
+  let remaining = sourcePath ? sourcePath.split("/").filter(Boolean) : [];
+  let resolved = [];
+  const visitedLinks = new Set();
+
+  while (remaining.length > 0) {
+    const parentPath = resolved.join("/");
+    const treeish = parentPath ? `${baseRef}:${parentPath}` : baseRef;
+    const entries = execFileSync("git", ["ls-tree", "-z", treeish], {
+      cwd: root,
+      encoding: "utf8",
+    }).split("\0").filter(Boolean).map((entry) => {
+      const separator = entry.indexOf("\t");
+      return { mode: entry.slice(0, 6), name: entry.slice(separator + 1) };
+    });
+    const requestedName = remaining[0];
+    const matchingEntries = entries.filter(({ name }) => process.platform === "win32"
+      ? name.toLowerCase() === requestedName.toLowerCase()
+      : name === requestedName);
+    if (matchingEntries.length !== 1) return undefined;
+    const [entry] = matchingEntries;
+    const candidate = [...resolved, entry.name].join("/");
+
+    if (entry.mode === "120000") {
+      const target = execFileSync("git", ["show", `${baseRef}:${candidate}`], {
+        cwd: root,
+        encoding: "utf8",
+      });
+      if (path.posix.isAbsolute(target) || path.win32.isAbsolute(target)) return undefined;
+      const relativeTarget = target.replaceAll("\\", "/");
+      const targetPath = path.posix.normalize(path.posix.join(path.posix.dirname(candidate), relativeTarget));
+      if (targetPath === ".." || targetPath.startsWith("../") || path.posix.isAbsolute(targetPath)) return undefined;
+      const linkIdentity = `${candidate}\0${targetPath}`;
+      if (visitedLinks.has(linkIdentity)) return undefined;
+      visitedLinks.add(linkIdentity);
+      const targetParts = targetPath === "." ? [] : targetPath.split("/").filter(Boolean);
+      remaining = [...targetParts, ...remaining.slice(1)];
+      resolved = [];
+    } else {
+      resolved.push(entry.name);
+      remaining.shift();
+    }
+  }
+
+  return resolved.join("/");
+}
+
+async function validatePluginVersionsAgainstBase(root, plugins, baseRef, errors) {
+  let changedFiles;
+  let basePlugins;
+  try {
+    changedFiles = execFileSync("git", ["-c", "core.quotepath=false", "diff", "--name-only", "--no-renames", "-z", baseRef, "--"], {
+      cwd: root,
+      encoding: "utf8",
+    }).split("\0").filter(Boolean);
+    const baseMarketplace = JSON.parse(execFileSync("git", ["show", `${baseRef}:.github/plugin/marketplace.json`], {
+      cwd: root,
+      encoding: "utf8",
+    }));
+    basePlugins = new Map(baseMarketplace.plugins.map((plugin) => [plugin.name, plugin]));
+  } catch (error) {
+    errors.push(`Unable to compare Plugin changes against base ${baseRef}: ${error.stderr?.toString().trim() || error.message}`);
+    return;
+  }
+
+  for (const plugin of plugins) {
+    const previous = basePlugins.get(plugin.name);
+    if (!previous) continue;
+    const currentRoot = path.resolve(root, plugin.source ?? "");
+    const previousRoot = path.resolve(root, previous.source ?? "");
+    if (isOutside(root, currentRoot) || isOutside(root, previousRoot)) continue;
+    const currentPath = path.relative(root, currentRoot).split(path.sep).join("/");
+    const previousPath = path.relative(root, previousRoot).split(path.sep).join("/");
+    const sourceChanged = plugin.source !== previous.source;
+    let currentRealPath;
+    try {
+      currentRealPath = await realpath(currentRoot);
+    } catch {
+      currentRealPath = currentRoot;
+    }
+    const currentRealPathRelative = isOutside(root, currentRealPath)
+      ? undefined
+      : path.relative(root, currentRealPath).split(path.sep).join("/");
+    const sourcePaths = [currentPath, currentRealPathRelative, previousPath].filter((directory) => directory !== undefined);
+    const changed = sourceChanged || changedFiles.some((file) => sourcePaths.some((directory) => (
+      directory === "" || file === directory || file.startsWith(`${directory}/`)
+    )));
+    if (!changed) continue;
+
+    let previousManifest;
+    try {
+      const baseSourcePath = resolveGitSourcePath(root, baseRef, previousPath);
+      if (baseSourcePath === undefined) throw new Error("base Plugin source resolves outside the repository or has a symlink cycle");
+      const manifestPath = baseSourcePath ? `${baseSourcePath}/plugin.json` : "plugin.json";
+      previousManifest = JSON.parse(execFileSync("git", ["show", `${baseRef}:${manifestPath}`], {
+        cwd: root,
+        encoding: "utf8",
+      }));
+    } catch (error) {
+      errors.push(`${plugin.name}: could not read plugin.json at base ${baseRef}: ${error.stderr?.toString().trim() || error.message}`);
+      continue;
+    }
+    if (!isNewerVersion(plugin.version, previousManifest.version)) {
+      errors.push(`${plugin.name}: Plugin content changed from base ${baseRef} without a higher SemVer version`);
+    }
+  }
+}
+
+export async function validateMarketplace(root = process.cwd(), { baseRef } = {}) {
   const errors = [];
   const marketplaceRoot = await realpath(path.resolve(root));
   const marketplacePath = path.join(marketplaceRoot, ".github", "plugin", "marketplace.json");
   const marketplace = JSON.parse(await readFile(marketplacePath, "utf8"));
+  const packageJson = JSON.parse(await readFile(path.join(marketplaceRoot, "package.json"), "utf8"));
+
+  try {
+    await lstat(path.join(marketplaceRoot, "learnings"));
+    errors.push("Resource branch must not contain a root learnings/ directory; published Learnings come from teamai-learnings");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+
+  if (marketplace.metadata?.version !== packageJson.version) {
+    errors.push(`Marketplace metadata version ${marketplace.metadata?.version ?? "<missing>"} does not match package.json ${packageJson.version ?? "<missing>"}`);
+  }
   try {
     await discoverMarketplaceUserInstructions(marketplaceRoot);
   } catch (error) {
@@ -267,6 +403,8 @@ export async function validateMarketplace(root = process.cwd()) {
     errors.push(".github/plugin/marketplace.json must contain at least one plugin");
     return errors;
   }
+
+  if (baseRef) await validatePluginVersionsAgainstBase(marketplaceRoot, marketplace.plugins, baseRef, errors);
 
   const pluginNames = new Set();
   const skillOwners = new Map();
@@ -396,11 +534,19 @@ export async function validateMarketplace(root = process.cwd()) {
 }
 
 if (import.meta.url === new URL(`file://${process.argv[1].replaceAll("\\", "/")}`).href) {
-  const errors = await validateMarketplace();
-  if (errors.length > 0) {
-    for (const error of errors) console.error(`ERROR: ${error}`);
-    process.exitCode = 1;
+  const args = process.argv.slice(2);
+  const validArgs = args.length === 0 || (args.length === 2 && args[0] === "--base" && args[1] && !args[1].startsWith("--"));
+  if (!validArgs) {
+    console.error("Usage: node scripts/validate.mjs [--base <commit-or-ref>]");
+    process.exitCode = 2;
   } else {
-    console.log("Marketplace validation passed.");
+    const baseRef = args.length === 2 ? args[1] : undefined;
+    const errors = await validateMarketplace(process.cwd(), { baseRef });
+    if (errors.length > 0) {
+      for (const error of errors) console.error(`ERROR: ${error}`);
+      process.exitCode = 1;
+    } else {
+      console.log("Marketplace validation passed.");
+    }
   }
 }

@@ -55,7 +55,6 @@ teamai-marketplace/
 ├── manifest/
 │   └── projects.yaml
 ├── contexts/
-├── learnings/
 ├── docs/
 ├── scripts/
 └── test/
@@ -81,7 +80,7 @@ CLI 通过扫描仓库推导每个 Skill 的来源和路径；不要在 `skills.
 
 ## Logical Projects 与 Learnings
 
-`manifest/projects.yaml` 定义可选的业务 context binding。Logical Project 不是 Plugin，可以不填写 `plugin`；若填写，必须是 `kind: project`。CLI 会将 `contexts/<id>/instructions/` 投影到绑定 Physical Repository 的 `.github/instructions/teamai/<id>/`，再通过生成的 pointer 引用 `contexts/<id>/docs/`、`learnings/<id>/` 和 `learnings/shared/`。新的 reference instruction 统一使用 `applyTo: "**"`；CLI 保留 source bytes 和 frontmatter。
+`manifest/projects.yaml` 定义可选的业务 context binding。Logical Project 不是 Plugin，可以不填写 `plugin`；若填写，必须是 `kind: project`。资源分支保存 `contexts/<id>/instructions/` 和 `contexts/<id>/docs/`，不应包含根目录 `learnings/`。已发布的 Learning 只来自同一仓库的 `teamai-learnings` 分支，路径为 `learnings/shared/` 或 `learnings/<实际 Logical Project ID>/`。新的 reference instruction 统一使用 `applyTo: "**"`；CLI 保留 source bytes 和 frontmatter。
 
 这两个 Project context root 是 Team AI reserved projection。未声明 ownership 的 collision 会拒绝，CLI 只将这两个 root 写入 Git 解析后的 `info/exclude`。Marketplace 自己不会复制内容到业务 Repository。portable 或 path-specific `applyTo`、认证模型读取 ignored documentation 和 runtime Plugin Rule execution 仍未验证。
 

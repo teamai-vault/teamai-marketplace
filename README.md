@@ -55,7 +55,6 @@ teamai-marketplace/
 ├── manifest/
 │   └── projects.yaml
 ├── contexts/
-├── learnings/
 ├── docs/
 ├── scripts/
 └── test/
@@ -81,7 +80,7 @@ The CLI derives each Skill's source and path by scanning the repository. Do not 
 
 ## Logical Projects and learnings
 
-`manifest/projects.yaml` defines optional business-context bindings. A Logical Project is not a Plugin and may omit `plugin`; its optional Plugin must use `kind: project`. The CLI projects `contexts/<id>/instructions/` into a bound physical repository's `.github/instructions/teamai/<id>/`, and reads `contexts/<id>/docs/`, `learnings/<id>/`, and `learnings/shared/` through a generated pointer. New reference instructions use `applyTo: "**"`; the CLI preserves source bytes and frontmatter.
+`manifest/projects.yaml` defines optional business-context bindings. A Logical Project is not a Plugin and may omit `plugin`; its optional Plugin must use `kind: project`. The resource branch holds `contexts/<id>/instructions/` and `contexts/<id>/docs/`; it must not contain a root `learnings/` directory. Published Learnings come only from the same repository's `teamai-learnings` branch, under `learnings/shared/` or `learnings/<actual-logical-project-id>/`. New reference instructions use `applyTo: "**"`; the CLI preserves source bytes and frontmatter.
 
 The two project context roots are reserved Team AI projections. An unowned collision is refused, and the CLI adds only those roots to Git's resolved `info/exclude`. The Marketplace never copies into a business repository itself. Portable or path-specific `applyTo` behavior, authenticated model reading of ignored documentation, and runtime Plugin Rule execution remain unverified.
 
