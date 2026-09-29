@@ -275,7 +275,7 @@ test("release version check resolves actual source casing on Windows", async (co
   catalog.plugins[0].source = "./PLUGINS/TEST-PLUGIN";
   await writeFile(catalogPath, JSON.stringify(catalog), "utf8");
   const actualSource = await realpath(path.resolve(marketplace, catalog.plugins[0].source));
-  assert.equal(path.relative(marketplace, actualSource).replaceAll(path.sep, "/"), "plugins/test-plugin");
+  assert.equal(path.relative(await realpath(marketplace), actualSource).replaceAll(path.sep, "/"), "plugins/test-plugin");
   const content = path.join(plugin, "content.md");
   await writeFile(content, "Initial content.\n", "utf8");
   const git = (args) => execFileSync("git", args, { cwd: marketplace, encoding: "utf8" }).trim();
