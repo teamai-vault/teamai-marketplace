@@ -306,11 +306,23 @@ test("reference Marketplace publishes native global and nested user instructions
   assert.doesNotMatch(nested, /\b(?:level|priority|scope|trigger|action):/i);
 });
 
-test("reference Marketplace publishes an optional-plugin-free Logical Project", async () => {
+test("reference Marketplace binds the optional project Plugin to teamai", async () => {
   const marketplace = JSON.parse(await readFile(path.join(root, ".github", "plugin", "marketplace.json"), "utf8"));
   const manifest = await readFile(path.join(root, "manifest", "projects.yaml"), "utf8");
-  assert.match(manifest, /id: teamai/);
-  assert.doesNotMatch(manifest, /plugin:/);
+  const teamaiProject = manifest.split(/\r?\n(?=  - id: )/).find((entry) => /^  - id: teamai\r?$/m.test(entry));
+  assert.ok(teamaiProject);
+  assert.match(teamaiProject, /^    plugin: teamai-project\r?$/m);
+
+  const catalogEntry = marketplace.plugins.find((plugin) => plugin.name === "teamai-project");
+  assert.ok(catalogEntry);
+  assert.equal(catalogEntry?.source, "./plugins/teamai-project");
+  const plugin = JSON.parse(await readFile(path.join(root, "plugins", "teamai-project", "plugin.json"), "utf8"));
+  assert.equal(plugin.extensions?.["com.company.teamai"]?.kind, "project");
+  assert.equal(plugin.version, catalogEntry.version);
+
+  const markerSkill = await readFile(path.join(root, "plugins", "teamai-project", "skills", "teamai-project-scope-probe", "SKILL.md"), "utf8");
+  assert.match(markerSkill, /^name: teamai-project-scope-probe\r?$/m);
+  assert.match(markerSkill, /TEAMAI_PROJECT_PLUGIN_SCOPE_V4_9C8E/);
 });
 
 test("catalog publishes bare role plugin names", async () => {

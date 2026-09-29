@@ -6,3 +6,4 @@ projects:
     description: Team AI CLI and Marketplace reference context
     owners:
       - teamai
+    plugin: teamai-project

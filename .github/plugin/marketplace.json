@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Shared GitHub Copilot capabilities for engineering teams",
-    "version": "0.3.1"
+    "version": "0.4.0"
   },
   "plugins": [
     {
@@ -13,6 +13,12 @@
       "description": "Shared Copilot capabilities useful across engineering roles",
       "version": "0.1.1",
       "source": "./plugins/common"
+    },
+    {
+      "name": "teamai-project",
+      "description": "Test-only optional Plugin for Team AI project scope verification",
+      "version": "0.1.0",
+      "source": "./plugins/teamai-project"
     },
     {
       "name": "api",

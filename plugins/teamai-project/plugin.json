@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "teamai-project",
+  "version": "0.1.0",
+  "description": "Test-only optional Plugin for Team AI project scope verification",
+  "keywords": ["teamai", "project", "scope-probe"],
+  "extensions": {
+    "com.company.teamai": {
+      "kind": "project"
+    }
+  }
+}
