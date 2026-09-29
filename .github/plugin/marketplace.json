@@ -11,7 +11,7 @@
     {
       "name": "common",
       "description": "Shared Copilot capabilities useful across engineering roles",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./plugins/common"
     },
     {
