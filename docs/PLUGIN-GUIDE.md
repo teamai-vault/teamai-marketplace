@@ -6,8 +6,8 @@ Use Agent Plugins 1.0 for new plugins.
 
 - `common`: broadly useful shared capabilities.
 - Role plugins such as `api`, `ios`, and `design`: capabilities that belong to one engineering role.
-- Project plugins: optional executable capability for a Logical Project declared in `manifest/projects.yaml`.
-- Project-only behavior stays in the business repository under `.github/*`.
+- Project packages: optional versioned Marketplace resources selected by a Logical Project in `manifest/projects.yaml`.
+- Project-specific content may live in the business repository or in its selected Marketplace project package.
 
 ## Team AI metadata
 
@@ -39,8 +39,8 @@ If the Team AI extension namespace must change, update both the Team AI CLI `TEA
 
 - Define Logical Projects in `manifest/projects.yaml`.
 - Put project instructions in `contexts/<id>/instructions/` and docs in `contexts/<id>/docs/`. Published Learnings belong only on the same repository's `teamai-learnings` branch, under `learnings/shared/` or `learnings/<actual-logical-project-id>/`; do not add a root `learnings/` directory to the resource branch. Keep reference instruction frontmatter `applyTo: "**"`.
-- A Project Plugin is optional executable capability. It must be declared as `kind: project` and referenced by the Logical Project manifest; it does not turn a Physical Project into a Plugin.
-- The CLI mirrors only its two owned projection roots into the physical repository and rejects unowned collisions. Do not add a second resource/projection mechanism here.
+- An optional project package declares `kind: project` and is referenced by the Logical Project manifest. It is a Marketplace resource and version source, not a Copilot Plugin that the CLI installs or enables.
+- For a bound Physical Workspace, the CLI must deliver only declared, compatible Agents, Instructions/Rules, Skills, Hooks, and MCP entries to their native repository locations under [Spec #14 F05](https://github.com/teamai-vault/teamai-cli-copilot/issues/14). Existing context projections remain. The CLI must preserve unowned targets and clean up only accurately owned resources; package presence alone does not prove runtime consumption.
 
 ## Native MCP and Hooks
 
