@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Shared GitHub Copilot capabilities for engineering teams",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
@@ -16,8 +16,8 @@
     },
     {
       "name": "teamai-project",
-      "description": "Test-only optional Plugin for Team AI project scope verification",
-      "version": "0.1.0",
+      "description": "Example Project Plugin with five distinct probes for Team AI workspace component projection",
+      "version": "0.2.0",
       "source": "./plugins/teamai-project"
     },
     {
