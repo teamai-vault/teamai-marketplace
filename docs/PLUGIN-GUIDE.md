@@ -48,4 +48,4 @@ If the Team AI extension namespace must change, update both the Team AI CLI `TEA
 - Keep plugin-relative executables and scripts inside the Plugin root. Use direct `exec` plus `args`, or provide a cross-platform `command`/paired `bash` and `powershell` commands.
 - Do not commit credential headers or hide download-and-execute behavior in a Hook.
 - `npm run validate` inspects declarations only. It never starts an MCP server or runs a Hook.
-- The current catalog intentionally contains no real MCP or Hook implementation.
+- The `teamai-project` example includes a marker MCP server and SessionStart Hook for Workspace delivery checks; they are not production services.

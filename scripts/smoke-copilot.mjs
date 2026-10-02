@@ -62,17 +62,15 @@ try {
 
   await run(["plugins", "install", "common@teamai"]);
   await run(["plugins", "install", "api@teamai"]);
-  await run(["plugins", "install", "teamai-project@teamai"]);
   const installed = JSON.parse((await run(["plugins", "list", "--kind", "plugin", "--json"])).stdout);
   assert.ok(Array.isArray(installed.plugins));
   assert.ok(installed.plugins.some((item) => item.name === "api" && item.enabled === true));
   assert.ok(installed.plugins.some((item) => item.name === "common" && item.enabled === true));
-  assert.ok(installed.plugins.some((item) => item.name === "teamai-project" && item.enabled === true));
+  assert.ok(!installed.plugins.some((item) => item.name === "teamai-project" && item.enabled === true));
 
   const skills = JSON.parse((await run(["skill", "list", "--json"])).stdout);
   assert.ok(Array.isArray(skills), "Native skill listing must be an array.");
   assert.ok(skills.some((item) => item.name === "code-review" && item.source === "plugin" && item.enabled === true && typeof item.path === "string"), "common Plugin Skill should be discoverable");
-  assert.ok(skills.some((item) => item.name === "teamai-project-scope-probe" && item.source === "plugin" && item.enabled === true && typeof item.path === "string"), "project Plugin Skill should be discoverable after explicit test-profile installation");
 
   const mcp = JSON.parse((await run(["plugins", "list", "--kind", "mcp", "--json"])).stdout);
   assert.ok(Array.isArray(mcp.plugins));
