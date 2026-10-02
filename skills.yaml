@@ -22,6 +22,7 @@ skills:
   reviewit: { owner: api-team, tags: [review] }
   show-me: { owner: common-team, tags: [explanation] }
   task-supervisor: { owner: common-team, tags: [workflow, delegation] }
+  teamai-project-scope-probe: { owner: teamai, tags: [project, scope, validation] }
   tdd: { owner: common-team, tags: [testing] }
   to-spec: { owner: common-team, tags: [planning, specification] }
   to-tickets: { owner: common-team, tags: [planning, tickets] }
