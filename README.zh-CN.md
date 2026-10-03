@@ -104,7 +104,7 @@ CLI 通过扫描仓库推导每个 Skill 的来源和路径；不要在 `skills.
 
 这是 GitHub Copilot Marketplace 创建指南推荐的布局。
 
-同时已经使用本机 GitHub Copilot CLI `1.0.83` 做过真实兼容性测试：root `marketplace.json` 和 `.github/plugin/marketplace.json` 两种目录都可以成功 `marketplace add` 与 `browse`。既然两者都支持，本 Repo 选择跟随创建指南的 `.github/plugin/marketplace.json`。
+历史上使用 GitHub Copilot CLI `1.0.83` 做过真实兼容性测试：root `marketplace.json` 和 `.github/plugin/marketplace.json` 两种目录都可以成功 `marketplace add` 与 `browse`。该结果属于旧版 CLI 合同；本 Repo 继续采用创建指南推荐的 `.github/plugin/marketplace.json`。
 
 ## Agent Plugins 1.0
 
@@ -175,23 +175,25 @@ Validator 会检查 Marketplace catalog、Agent Plugins 1.0 manifest、Plugin so
 
 ## 使用 Copilot CLI 本地测试这份 Reference Marketplace
 
+当前 smoke/CI 基线为最新稳定 Copilot CLI `1.0.91`。将该 runtime 放到 PATH 后运行 `npm run test:copilot`；smoke 核验实际版本，并为每次调用加上 `--no-auto-update` 冻结 runtime。启动前将 `TEMP`/`TMP` 指向本任务临时目录。smoke 创建隔离的 home/cache/profile，检查 common/api 的安装与启用及 common Skill 的准确路径，并读取 MCP 配置 map。MCP 清单不证明工具执行或 VS Code/Agent Host 消费。
+
 ```text
-copilot plugins marketplace add <path-to-teamai-marketplace>
-copilot plugins marketplace browse teamai
-copilot plugins install common@teamai
-copilot plugins install api@teamai
+copilot plugin marketplace add <path-to-teamai-marketplace>
+copilot plugin marketplace browse teamai
+copilot plugin install common@teamai
+copilot plugin install api@teamai
 ```
 
 Design Role：
 
 ```text
-copilot plugins install design@teamai
+copilot plugin install design@teamai
 ```
 
 如果要清理测试 Marketplace 以及所有从它安装的 Plugin：
 
 ```text
-copilot plugins marketplace remove teamai --force
+copilot plugin marketplace remove teamai --force
 ```
 
 `--force` 会同时移除该 Marketplace 及其来源 Plugin。如果你还准备继续使用某个 `teamai` Plugin，不要执行这条命令。
