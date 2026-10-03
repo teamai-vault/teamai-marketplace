@@ -21,8 +21,8 @@ This repository publishes the department Marketplace catalog, its Agent Plugins 
 
 - Fast structural check: `npm run validate`.
 - Repository tests: `npm test` (Node's built-in test runner; no local dependency install is required).
-- For Marketplace catalog, Plugin packaging, or Copilot adapter changes: `npm run test:copilot`. It requires global GitHub Copilot CLI `1.0.83` and exercises real add, browse, and install operations in an isolated temporary profile.
-- CI runs validate/tests on Windows and macOS with Node 20, and the Copilot contract smoke with Node 22 plus Copilot CLI `1.0.83`. Record any unexecuted platform rather than inferring parity.
+- For Marketplace catalog, Plugin packaging, or Copilot adapter changes: `npm run test:copilot`. Put GitHub Copilot CLI `1.0.91` on PATH; the smoke verifies the actual runtime and uses `--no-auto-update` for every command. It exercises canonical `plugin` add/list/browse/install, precise common/api activation and Skill discovery, and the `mcpServers` listing protocol in an isolated home/cache/profile. MCP configuration discovery does not establish tool execution.
+- CI runs validate/tests on Windows and macOS with Node 20, and the Copilot contract smoke with Node 22 plus the single latest-stable Copilot CLI pin `1.0.91`. For local runs, point `TEMP`/`TMP` at the task's temporary directory before starting the smoke; its nested runtime directories remain isolated. Record any unexecuted platform rather than inferring parity.
 
 ## Agent skills
 

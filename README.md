@@ -104,7 +104,7 @@ The canonical manifest is:
 
 This follows the GitHub Copilot Marketplace creation-guide layout.
 
-Compatibility was also tested locally with GitHub Copilot CLI `1.0.83`: the CLI accepted both a root-level `marketplace.json` and `.github/plugin/marketplace.json`. Because both work, this repository deliberately uses the guide-recommended `.github/plugin/marketplace.json` layout.
+Historical compatibility testing with GitHub Copilot CLI `1.0.83` accepted both a root-level `marketplace.json` and `.github/plugin/marketplace.json`. That result belongs to the older CLI contract; this repository retains the guide-recommended `.github/plugin/marketplace.json` layout.
 
 ## Agent Plugins 1.0
 
@@ -175,25 +175,27 @@ The validator checks the marketplace catalog, Agent Plugins 1.0 manifests, plugi
 
 ## Test this reference Marketplace locally with Copilot CLI
 
+The current smoke/CI baseline is the latest stable Copilot CLI `1.0.91`. Put that runtime on PATH, then run `npm run test:copilot`; the smoke verifies its actual version and freezes every invocation with `--no-auto-update`. Set `TEMP`/`TMP` to your task's temporary directory first. The smoke creates an isolated home/cache/profile, checks common/api installation and activation plus the exact common Skill path, and reads the MCP configuration map. MCP listing does not prove tool execution or VS Code/Agent Host consumption.
+
 From any directory:
 
 ```text
-copilot plugins marketplace add <path-to-teamai-marketplace>
-copilot plugins marketplace browse teamai
-copilot plugins install common@teamai
-copilot plugins install api@teamai
+copilot plugin marketplace add <path-to-teamai-marketplace>
+copilot plugin marketplace browse teamai
+copilot plugin install common@teamai
+copilot plugin install api@teamai
 ```
 
 For the design role:
 
 ```text
-copilot plugins install design@teamai
+copilot plugin install design@teamai
 ```
 
 Clean up a test marketplace and every plugin installed from it:
 
 ```text
-copilot plugins marketplace remove teamai --force
+copilot plugin marketplace remove teamai --force
 ```
 
 `--force` removes the marketplace and plugins sourced from it. Do not use it when you intend to keep any `teamai` plugin installed.
