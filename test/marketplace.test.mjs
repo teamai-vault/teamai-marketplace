@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { link, lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
+import { execFileSync, spawnSync } from "node:child_process";
+import { copyFile, link, lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -98,6 +98,18 @@ test("validator rejects a link-like user instructions source root", async (conte
 
 test("marketplace and Agent Plugins 1.0 manifests are structurally valid", async () => {
   assert.deepEqual(await validateMarketplace(root), []);
+});
+
+test("validator CLI rejects invalid content when its path contains URL characters", async (context) => {
+  const { marketplace } = await createCapabilityFixture(context);
+  await writeFile(path.join(marketplace, "package.json"), JSON.stringify({ version: "0.2.0" }), "utf8");
+  const scriptDirectory = path.join(marketplace, "目录 # 100%");
+  await mkdir(scriptDirectory);
+  const script = path.join(scriptDirectory, "validate.mjs");
+  await copyFile(path.join(root, "scripts", "validate.mjs"), script);
+  const result = spawnSync(process.execPath, [script], { cwd: marketplace, encoding: "utf8" });
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  assert.match(result.stderr, /Marketplace metadata version 0\.1\.0 does not match package\.json 0\.2\.0/);
 });
 
 test("catalog metadata version matches the private package version", async () => {

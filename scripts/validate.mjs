@@ -1,7 +1,9 @@
 import { execFileSync } from "node:child_process";
+import { realpathSync } from "node:fs";
 import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 const AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
@@ -533,7 +535,7 @@ export async function validateMarketplace(root = process.cwd(), { baseRef } = {}
   return errors;
 }
 
-if (import.meta.url === new URL(`file://${process.argv[1].replaceAll("\\", "/")}`).href) {
+if (process.argv[1] && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1])) {
   const args = process.argv.slice(2);
   const validArgs = args.length === 0 || (args.length === 2 && args[0] === "--base" && args[1] && !args[1].startsWith("--"));
   if (!validArgs) {
