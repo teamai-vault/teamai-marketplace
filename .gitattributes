@@ -1,0 +1,8 @@
+# Source, Plugin scripts and instruction sources are portable UTF-8/LF text.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+# A Learning's original bytes are its provenance; do not apply text filters.
+learnings/** -text !eol
+*.tgz -text !eol
+*.zip -text !eol
