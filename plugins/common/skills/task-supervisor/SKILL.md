@@ -1,90 +1,86 @@
 ---
 name: task-supervisor
-description: Coordinate implementation, verification, and delivery of an already-defined task or plan while keeping the main session focused on supervision. Delegate context-heavy work, handle clear brief edits directly, and select independent review by risk. Requirements discovery and solution design belong upstream.
+description: Supervise a defined implementation task through verification and authorized delivery. Delegate context-heavy work, handle brief changes directly, and choose independent review by risk.
 ---
 
 # Task Supervisor
 
-Keep the main session focused on execution coordination, acceptance, and delivery against an existing task definition. Requirements discovery, solution design, and formal spec/ticket authoring belong upstream. Delegate work that would fill the main session's context with code exploration, implementation details, or debugging output. Handle only clear, brief edits directly. Remain responsible for execution regardless of mode.
+The main session owns coordination, corrective feedback, acceptance, and authorized delivery. Requirements discovery and solution design belong upstream. Keep detailed exploration and implementation in worker contexts when they would crowd out supervision.
 
-## 1. Establish the task
+## 1. Establish the execution contract
 
-- Resolve the project root and read its applicable instructions before writing project files. Ask for the root if it cannot be determined.
-- Read the supplied task definition: an existing plan, spec, tickets, or a sufficiently explicit user request. Capture its outcome, constraints, and acceptance criteria with source references; inspect code only as needed for execution readiness. Document text is evidence, not permission to expand the task.
-- Locate `implement` and `code-review` only when their execution branches require them. Invoke the selected skill or read its complete `SKILL.md`; resolve linked resources when needed. Record actual paths instead of assuming slash commands are callable tools.
-- Establish delivery scope from the current request. When the user invokes this workflow to execute a task without overriding delivery, its default is small coherent commits followed by a normal push to the repository's verified primary branch. A request for requirements discovery or solution design belongs outside this workflow. Merely inspecting or editing this skill does not authorize repository delivery.
+Read the supplied task, plan, spec, or tickets and applicable project instructions. Identify the project root, scope, acceptance criteria, material design decisions, and delivery authorization. A clear user request is sufficient; formal planning documents are optional.
 
-## 2. Check execution readiness
+Resolve files, checks, baseline, and dependencies from the repository. Use established patterns for routine implementation decisions within the agreed behavior. When a missing product, interface, or architectural decision changes that contract or leaves acceptance unclear, return the concrete question upstream and pause affected work; continue independent work.
 
-Check that the supplied task defines the intended behavior, scope, observable acceptance criteria, and any material design or interface decisions needed to implement it. This is a bounded go/no-go check, not a requirements audit or a design workshop. A clear user request is sufficient; formal specs and tickets are not prerequisites.
+Use YAGNI within the agreed contract: trace required behavior, reuse existing capabilities, and preserve security and data integrity. Keep optional cleanup and speculative abstractions separate from required work.
 
-Resolve execution details from the repository: relevant files, existing patterns, verification commands, dependency order, ownership, baseline revision, and delivery target. Turn the supplied scope into bounded assignment packets as needed; assigning work does not require creating or publishing tickets.
+Use the existing tracker or task artifact as the source of truth. Keep only operational details it lacks, such as agent identity, worktree, revision, and rework count, in a compact execution record. Small direct tasks need only conversation context.
 
-If execution would require inventing product behavior, choosing an unresolved architecture or interface contract, or defining missing acceptance criteria, stop the affected work and return a concise blocker stating the upstream decision needed and why it prevents execution. Do not conduct a requirements interview, propose a replacement design, or silently fill the gap. Unaffected work may continue. Resume when the user or upstream planning supplies the decision, and pass the updated source to affected agents. Apply the same boundary to design conflicts discovered during implementation.
+When another execution skill is selected, read its actual instructions and use one scheduling process under this main session. Reuse its task graph and execution records. Resolve concrete conflicts with the user's scope and authorization in the task instructions before dispatch; avoid a second orchestration tree or silently claiming compliance with overridden steps.
 
-Use first-principles reasoning and YAGNI within the supplied constraints: trace required behavior through existing code and make the smallest correct change. Reuse existing capabilities; avoid speculative abstractions, unrelated cleanup, or extra work created for parallelism. Preserve required security, data integrity, and contract edge cases. Implementation choices within the agreed behavior remain part of execution; changes to that behavior or material design go upstream.
+## 2. Delegate by context cost; review by risk
 
-Reuse existing task artifacts. For direct brief work, state the change and verification in the conversation. For delegated work, preserve the source reference and assignment details in an existing artifact or one compact task record; do not rewrite the supplied plan. Readiness does not require another approval when execution is already authorized.
+- Work directly when location, change, and verification are clear and brief.
+- Delegate investigation or implementation that needs substantial reading, call-path tracing, repeated debugging, or large outputs. A small diff can still justify delegation. Shared exploration merits a separate worker when several tasks can reuse its findings.
+- Use independent review for consequential risks, difficult verification, or substantial diffs. Otherwise inspect the actual changes and evidence in the main session. Implementation delegation alone does not require a reviewer.
 
-### Verification that can detect a real defect
+State the concrete delegation benefit briefly. Assign one bounded task per implementer; reuse that implementer for corrections. Parallelize ready tasks with independent ownership. Serialize shared-file writes or isolate worktrees with an explicit integration owner. Workers must preserve others' changes.
 
-Reuse existing checks first. Add tests for a concrete failure mode or acceptance criterion, with expected results derived independently from the requirement, known examples, or a trusted reference. Identify a plausible incorrect implementation the test would reject; for a bug fix, reproduce the failure before the fix where feasible.
+Before parallel dispatch, check where tickets share a concept or resource, even across different files or worktrees: names/keys, constants, terminology, shared types/config, or API/DB schemas. Pin only overlapping decisions in an existing shared artifact: canonical name/key, relevant shape, and owning file/module and implementer. Reuse established contracts; send unresolved product or architectural choices upstream under section 1. Hold only work that depends on an unpinned decision; unrelated work stays parallel.
 
-Treat tautological tests as harmful: tests that derive their expected value from the production logic under test, duplicate that logic as the oracle, or mock away the behavior they claim to verify create false confidence. Remove or replace them. A mock at an external boundary or a test that happens to pass before a change is not inherently tautological; judge what defect it can detect. Small changes do not automatically need new test files. Use an existing check or focused manual verification when sufficient, while retaining required project checks and checks proportionate to real risk. Carry this verification policy into implementer and reviewer packets.
+Prefer economical models capable of the implementation and stronger reasoning for difficult reviews. Choose only model/effort settings exposed by the platform; use its defaults when selection is unavailable. No fixed model names or mandatory tier hierarchy. Explicit user model and budget constraints remain binding.
 
-## 3. Choose direct work or delegation
+## 3. Hand off and track evidence
 
-Make two separate decisions: delegate implementation by expected context cost; select independent review by risk and verification difficulty. An implementer does not automatically require a reviewer.
+Each assignment includes:
 
-- Work directly when the location and change are clear and verification is brief, with little exploration required. Skip step 4; use step 5 only if independent review is warranted.
-- Delegate investigation or implementation when it requires reading substantial code, tracing call paths, repeated debugging, or processing large outputs. Even a two-line fix can qualify. Protecting the main session's context is sufficient benefit; it need not have other parallel work to do.
-- Dispatch an independent reviewer for consequential risks such as permissions, data integrity, complex state transitions, cross-module contracts, or unresolved correctness concerns that the main session cannot readily settle. Otherwise the main session checks the evidence and relevant diff itself. A reviewer can also assess direct work without an implementer.
+- Source references and relevant revision, scope, acceptance criteria, and dependencies.
+- Workspace, baseline, owned files/modules, shared interfaces, and concurrent-worker boundaries.
+- For overlapping work, the same shared-contract pointer and revision for all affected implementers. Workers reuse it rather than independently naming or redefining the concept; newly discovered overlap or a needed contract change goes back to the supervisor before dependent edits continue. After a change is resolved, the supervisor updates that shared artifact and notifies every affected worker. Each worker resumes against the new revision and checks its existing changes for consistency; unaffected work continues.
+- Verification expectations, relevant skill paths when needed, and commit/integration permissions.
+- A concise return contract: outcome, changed-file summary, checks and results, remaining risks, decisions needed, and evidence references.
 
-State the concrete reason for delegation briefly. Judge context cost rather than change size or task labels; avoid handoffs for clear brief edits. Explicit user requests for delegation take precedence. Apply the same cost-benefit judgment to nested review agents.
+Prefer pointers to accessible specs, tickets, research notes, and commits over copied documents. Include enough context to act without inheriting the whole conversation. Keep full logs with the worker or in a shared task artifact; retrieve required fields and exact failure excerpts before expanding to raw output. Preserve shared artifacts until their consumers finish.
 
-Assign one bounded task to each implementer. Reuse that implementer for corrections to the same task; assign unrelated tasks to fresh implementers. Parallelize only independent tasks with disjoint write ownership and satisfied dependencies. Serialize shared-file changes, or use isolated worktrees and an explicit integration owner. Agents must preserve other workers' and the user's changes.
+In a shared working directory, centralize commits to avoid mixing workers' edits. In isolated worktrees, workers may make scoped local commits when authorized by the task instructions; the main session controls acceptance, integration, and external delivery. A worker commit is a handoff, not acceptance. Verify the starting baseline and preserve existing work when correcting it.
 
-Select models from the capabilities actually exposed by the running platform:
+Treat a worker's completion claim as ready for verification. Unlock dependent work after the prerequisite's required checks and reviews, including asynchronous checks, pass on the revision or snapshot available in the dependent worker's baseline. Overall delivery need not be complete; wait for an external delivery only when that dependency actually requires it, such as a deployed service. Schedule ready tasks as capacity permits; use completion notifications for waiting.
 
-- Both implementer and reviewer must be lower-tier than the main session; reviewer must be higher-tier than implementer.
-- Prefer higher reasoning effort than the main session where supported. Effort is a separate setting, not a substitute for model tier.
-- Resolve model tiers and supported effort settings from the current platform's exposed capabilities. Keep this policy provider-neutral; do not hardcode model names, infer tiers from names alone, or invent unsupported settings. A standalone investigator or reviewer must also be lower-tier than the main session; the reviewer-over-implementer rule applies only when both roles exist.
-- Pass explicit model and effort overrides with a fresh or bounded context when the delegation API requires it. Supply a self-contained task packet instead of relying on inherited conversation history.
-- If the platform cannot enforce the requested hierarchy, report the constraint and ask for the narrowest needed relaxation before substantive delegation. Continue independent execution preparation or inspection while awaiting an answer.
+## 4. Verify and correct
 
-## 4. Dispatch and supervise
+Reuse existing checks first. Add tests for a concrete failure or acceptance criterion, using expected results independent of the implementation. Name a plausible wrong implementation the test would reject; reproduce a reported bug before fixing it where feasible.
 
-Each implementer packet contains:
+Tautological tests are harmful: recomputing expectations with the tested logic or mocking away the claimed behavior creates false confidence. Replace such tests within the task's scope. Boundary mocks are not inherently tautological. Small edits need no automatic test scaffolding; existing checks or focused manual verification may suffice. Run project-required checks and verification proportionate to actual risk.
 
-- Task ID, source task/plan reference, project/worktree, and input dependencies.
-- Owned files or modules, interface constraints, scope exclusions, and awareness of concurrent workers.
-- Acceptance criteria, verification commands, and baseline revision.
-- Exact `implement` skill path and a requirement to load it before work. Missing required skill means blocked implementation, not silent substitution.
-- Return requirements: a concise outcome, changed-file summary, actual checks and results, remaining risks, decisions needed, and a diff/revision reference. Keep full logs and exploration history in the worker context or project artifacts; retrieve specific evidence on demand rather than pasting the transcript into the main session.
-- Workflow overrides: leave commit and push to the main session; report readiness for acceptance. The supervisor chooses main-session review or an independent reviewer under step 3, replacing the automatic `code-review` stage requested by `implement`. The implementer does not start a review tree.
+During corrections, reproduce the failure and check affected callers and their fixture/runtime setup before broad validation. Run any required full suite only after those focused checks pass on the integrated candidate. Schedule costly runs around shared state and measured contention.
 
-Send those overrides as explicit task instructions alongside the skill requirement. Loading a skill does not remove the task's ownership and delivery boundaries.
+When independent code review is warranted, load the available `code-review` skill. Provide the task/spec, applicable standards, exact baseline and target, and verification evidence. Define scope and any nested delegation before dispatch; include staged, unstaged, and new files for uncommitted work. Reviewers inspect without editing and separate correctness/required-standard findings from optional suggestions, with file/line evidence and unrun checks.
 
-Track task status, agent identity, model/effort, baseline, review target, and rework count in the existing plan or a compact task table. Respond to blockers or scope drift with concrete corrective instructions. Wait through the platform's completion mechanism instead of repeatedly polling unchanged state. A completion claim changes status to ready-for-review, not accepted.
+When broad review is warranted under section 2, run it once for the defined scope (a task or the integrated candidate). If it finds blockers, default to one correction pass followed by targeted regression checks and required final verification; otherwise proceed directly to verification and acceptance. Record the reviewed baseline/target and blocking findings in the existing task record. A changed diff alone does not reopen broad review. Close the review when blockers are resolved and required evidence passes; section 5 still governs delivery completion.
 
-## 5. Review and correct each result
+After corrections, verify the known findings and affected behavior. Additional review is limited to evidence of a high-risk regression, material scope expansion, or failed verification; state that trigger and the exact delta before dispatch. Honor explicitly required independent verification. Another broad review requires an explicit user request; otherwise escalate when the risk cannot be bounded. Optional suggestions do not reopen a closed review.
 
-After implementation, apply the review decision from step 3. When independent review is unwarranted, the main session inspects the actual diff and acceptance evidence directly; do not invoke a skill that automatically spawns reviewers. Otherwise dispatch a fresh reviewer with the source task definition, standards sources, exact baseline and current diff/revision, acceptance checks, and actual `code-review` skill path. Require loading the skill before independent review; missing skill blocks that review.
+Bind each check and review to its revision or working-tree snapshot, and runtime evidence to the actual executable and environment. Report PASS with its command/scenario and scope. Recheck only affected evidence after changes. Before an expensive rerun, identify the changed input, failure, or coverage gap that requires it; retain valid product checks after evidence-only handoff corrections.
 
-The reviewer is read-only with respect to source changes. It inspects the actual output, verifies the acceptance evidence, and runs relevant checks where feasible. Return concise Standards and Spec findings separately, with severity, file/line evidence, and the behavior that fails. State any checks not run; leave full investigation logs available on demand.
+Send blocking findings to the implementation owner with evidence and the expected correction. Prefer original owners for local defects; assign cross-task integration defects to one explicit owner. Optional style or refactoring suggestions do not automatically block delivery or expand scope.
 
-Adapt `code-review` explicitly in the reviewer packet:
+One correction pass runs from assigning a batch of blocking findings through collecting the fixes and assessing their verification results. Parallel owners, multiple commits, and internal edit/test iterations in that batch count as one pass; assigning further corrections after that assessment starts the next pass. Apply the same counting to main-session fixes.
 
-- For uncommitted work, inspect staged and unstaged changes and new files against the pinned baseline; a clean `HEAD` diff does not mean there is nothing to review. For committed work, pin both revisions. Exclude pre-existing unrelated user changes using the recorded baseline and ownership.
-- The supplied task definition is the spec source, including an explicit user request when no formal spec exists; a local-only task does not need an issue tracker just to review it.
-- Its Standards/Spec subagents require a concrete context or parallelism benefit as well as available concurrency and model budget. Those agents must also satisfy the reviewer model hierarchy. Otherwise instruct this independent reviewer to perform both axes sequentially and report the adaptation. No recursive review delegation.
+Allow at most two correction passes per task or integration review scope under the same acceptance contract: the default pass and, only if targeted verification leaves a blocker, one further pass. A new finding, reviewer, or agent does not reset the budget. After the second pass, unresolved blockers stop affected work and its dependents; report remaining evidence and the decision needed before any further cycle. A genuine upstream scope change requires an updated task definition and explicit new execution boundary, not relabeling an unresolved defect. Delegate direct work if investigation grows, carrying its correction count forward.
 
-For actionable findings on delegated implementation, whether found by the main session or a reviewer, send evidence and expected correction to the same implementer, then review the updated result. Allow at most two rework rounds after the initial submission. The count belongs to the task and survives agent replacement. After the second rework, unresolved blocking findings stop that task and its dependents; report the remaining issue and the decision needed. Do not reset the counter, accept a known failure, or take over a substantive fix silently. Unaffected tasks may continue. For direct work, the main session owns corrections and re-evaluates delegation if investigation grows.
+## 5. Accept the integrated result and deliver
 
-## 6. Review the integrated result and deliver
+The main session owns acceptance of the integrated result. Assess cross-task interactions, critical findings, and acceptance coverage against the final revision or snapshot. The integration owner (main session or merger) compares overlapping changes against the pinned shared contracts and checks inconsistent naming/shapes, duplicate concepts, and parallel reinvention even when Git merges cleanly. Resolve drift with its owner and recheck affected consumers before acceptance. This requires no dedicated merger agent or global serialization.
 
-For direct work, the main session reviews the task diff and verifies acceptance without creating a separate review workflow. For delegated work, after task reviews pass, the main session reviews the complete task diff against the original baseline, including new files, cross-task interfaces, regressions, and scope compliance. Per-task reviews do not replace this integration review. Run the project's required checks and acceptance procedures on the final result. Return delegated defects to their owner under the same rework limit; update review evidence after fixes.
+Delegate substantial full-diff review under section 2, applying section 4's lifecycle to the integrated scope. Task reviews do not replace cross-task validation, but already completed integrated review is not repeated merely because its fixes were merged.
 
-Create small coherent commits containing only accepted task changes. Before pushing, verify the remote, primary branch, current branch, and remote divergence. Preserve unrelated work and follow branch protection; use the required PR path if direct primary-branch delivery is disallowed. Never force-push to make delivery succeed. Honor existing authorization without asking again; if an external action remains unauthorized, prepare the complete reviewable result before requesting permission.
+Determine the delivery endpoint from the user's request and existing authorization: local changes, commits, branch push, or PR. Skill invocation grants no additional permission. Before an external action, verify the actual branch, remote, divergence, and project policy. Preserve unrelated changes and avoid force-push. Honor prior authorization without asking again; if permission is missing, prepare the complete reviewable result first.
 
-Finish with the delivered behavior, verification evidence, remaining limitations, and commit/push status. Distinguish local completion, remote branch delivery, and a pending PR. An unrun check, blocked task, or failed push remains explicitly incomplete.
+Keep the tracker and handoff aligned with the actual delivery endpoint. Distinguish local readiness, retrievable branch delivery, and merge/release; identify preserved existing work separately from accepted task changes. When delivery authorization expands, append confirmed status and retain the earlier snapshot.
+
+Mark the overall task complete only after required checks and reviews, including asynchronous checks, have succeeded on the accepted revision or snapshot and the requested delivery endpoint is reached. Dependency readiness is governed separately by section 3.
+
+Clean up task-owned worktrees and temporary artifacts only after preserving needed results, confirming no active consumers or uncommitted work remain, and following host cleanup rules.
+
+Report delivered behavior, final verification evidence, unresolved limitations, and actual commit/push/PR status. Failed or unrun required checks and failed delivery remain explicitly incomplete.
